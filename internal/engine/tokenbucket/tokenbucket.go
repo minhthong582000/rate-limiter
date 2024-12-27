@@ -2,6 +2,7 @@ package tokenbucket
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -36,12 +37,13 @@ func (t *tokenBucket) AllowAt(arriveAt time.Time) bool {
 	}
 
 	elapsed := arriveAt.Sub(t.LastTime).Seconds()
-	// Invalid time
+	// Invalid time or possible clock skew
 	if elapsed < 0 {
+		fmt.Println("Warning: Negative elapsed time detected. Possible clock skew.")
 		return false
 	}
 
-	t.CurrToken = min(t.Capacity, t.CurrToken+t.FillRate*elapsed)
+	t.CurrToken = math.Min(t.Capacity, t.CurrToken+math.Round(t.FillRate*elapsed*1000)/1000)
 
 	// How many hours has elapsed since the last time
 	fmt.Printf("Elapsed: %.3fh, Fill rate: %f, Curr token: %f\n", arriveAt.Sub(t.LastTime).Hours(), t.FillRate, t.CurrToken)
