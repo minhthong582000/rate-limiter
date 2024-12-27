@@ -42,9 +42,11 @@ func (t *tokenBucket) AllowAt(arriveAt time.Time) bool {
 	}
 
 	t.CurrToken = min(t.Capacity, t.CurrToken+t.FillRate*elapsed)
-	t.LastTime = arriveAt
 
-	fmt.Printf("Elapsed: %f, Fill rate: %f, Curr token: %f\n", elapsed, t.FillRate, t.CurrToken)
+	// How many hours has elapsed since the last time
+	fmt.Printf("Elapsed: %.3fh, Fill rate: %f, Curr token: %f\n", arriveAt.Sub(t.LastTime).Hours(), t.FillRate, t.CurrToken)
+
+	t.LastTime = arriveAt
 
 	if t.CurrToken >= t.ConsumeRate {
 		t.CurrToken -= t.ConsumeRate
