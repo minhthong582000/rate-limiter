@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/minhthong582000/rate-limiter/internal/engine/leakybucket"
 	"github.com/minhthong582000/rate-limiter/internal/engine/tokenbucket"
 )
 
@@ -55,7 +56,11 @@ func EngineFactory(opts ...Option) (Engine, error) {
 			config.ConsumeRate,
 		)
 	case LeakyBucket:
-		return nil, nil
+		engine = leakybucket.NewLeakyBucket(
+			uint64(config.Capacity),
+			config.LeakRate,
+			config.StopCh,
+		)
 	default:
 		return nil, fmt.Errorf("invalid rate-limiter engine type")
 	}
