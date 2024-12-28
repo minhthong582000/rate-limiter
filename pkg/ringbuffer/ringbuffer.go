@@ -40,7 +40,7 @@ func (r *RingBuffer[T]) StartIndex() uint64 {
 }
 
 func (r *RingBuffer[T]) Enqueue(value T) error {
-	if r.len == r.capacity {
+	if r.IsFull() {
 		return fmt.Errorf("ring is full")
 	}
 
