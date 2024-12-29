@@ -35,9 +35,9 @@ This strategy base on the idea of a bucket that can hold a limited number of tok
 
 For example, you want to handle 300 requests every minute:
 
-- capacity=300, fill-duration=5 (1 token every 5s)
+- capacity=300, fill-duration=0.2 (1 token every 0.2s)
 
-In this configuration, we can handle on average 1 req for every 0.25s and allow users to burst up to 300 requests at once.
+In this configuration, we can handle on average 1 req for every 0.2s and allow users to burst up to 300 requests at once.
 
 Key points:
 
@@ -51,8 +51,6 @@ Run:
 ```bash
 go run main.go run --engine=leaky-bucket --capacity=5 --drain-duration=200 --num-requests=20 --wait-time=100
 ```
-
-Note that arrival time in the `traffic.txt` file is not encountered in this strategy. It only considers the number of requests received.
 
 Think of this strategy as a bucket with a hole at the bottom. The bucket can hold a limited number of requests (`capacity`). When a request comes in, it will be added to the bucket (`queue`). If the bucket is full, the request will be rejected. The bucket will also be drained at a constant `drainRate = 1000/drain-duration` (requests/s).
 
