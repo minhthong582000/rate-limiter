@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"bufio"
+	"crypto/rand"
 	"fmt"
-	"os"
+	"math/big"
 	"time"
 
 	"github.com/minhthong582000/rate-limiter/internal/engine"
@@ -12,8 +12,12 @@ import (
 )
 
 var (
-	engineType     string
-	trafficLogFile string
+	engineType string
+
+	// Simulation parameters
+	numRequests int64
+	waitTime    int64 // in milliseconds
+	jitter      int64 // in milliseconds
 )
 
 // runCmd represents the run command
@@ -36,41 +40,30 @@ You can choose between different rate limiting engines such as fixed-window, sli
 
 			// Leaky bucket specific configuration
 			engine.WithLeakRate(500*time.Millisecond),
+
+			// Fixed size window specific configuration
+			engine.WithWindowSize(1000*time.Millisecond),
 		)
 		if err != nil {
 			return err
 		}
 
-		// Read each line from the traffic log file
-		file, err := os.Open(trafficLogFile)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		scanner := bufio.NewScanner(file)
-
 		errCh := make(chan error, 1)
 		go func() {
-			for scanner.Scan() {
-				tsStr := scanner.Text()
-				if tsStr == "" {
-					continue
+			for i := int64(0); i < numRequests; i++ {
+				if !ratelimiter.Allow() {
+					fmt.Printf("Request %d REJECTED\n", i)
+				} else {
+					fmt.Printf("Request %d ACCEPTED\n", i)
 				}
 
-				ts, err := time.Parse(time.RFC3339, tsStr)
+				randomJitter, err := rand.Int(rand.Reader, big.NewInt(jitter))
 				if err != nil {
 					errCh <- err
-					return
 				}
-
-				if ratelimiter.AllowAt(ts) {
-					println("ALLOWED")
-				} else {
-					println("BLOCKED")
-				}
-
-				time.Sleep(500 * time.Millisecond)
+				time.Sleep(time.Duration(waitTime+randomJitter.Int64()) * time.Millisecond)
 			}
+			fmt.Println("Press Ctrl+C to exit...")
 		}()
 
 		select {
@@ -88,5 +81,7 @@ func init() {
 	rootCmd.AddCommand(runCmd)
 
 	runCmd.PersistentFlags().StringVarP(&engineType, "engine", "e", "token-bucket", "Rate limiting engine (fixed-window, sliding-window, token-bucket, leaky-bucket)")
-	runCmd.PersistentFlags().StringVarP(&trafficLogFile, "log", "l", "", "Traffic log file path")
+	runCmd.PersistentFlags().Int64VarP(&numRequests, "num-requests", "n", 100, "Number of requests to simulate")
+	runCmd.PersistentFlags().Int64VarP(&waitTime, "wait-time", "w", 0, "Wait time between requests in milliseconds")
+	runCmd.PersistentFlags().Int64VarP(&jitter, "jitter", "j", 1, "Random jitter in milliseconds")
 }

@@ -12,7 +12,7 @@ Simple rate limiter implementation using many different strategies:
 ## Usage
 
 ```bash
-go run main.go run -l traffic.txt --engine <engine>
+go run main.go run --engine <engine>
 ```
 
 ## Comparison
@@ -22,7 +22,7 @@ go run main.go run -l traffic.txt --engine <engine>
 Run:
 
 ```bash
-go run main.go run -l traffic.txt --engine token-bucket
+go run main.go run --engine token-bucket
 ```
 
 This strategy base on the idea of a bucket that can hold a limited number of tokens (`capacity`). A request comming in will consume a token from the bucket if there are sufficient tokens available. If the bucket is empty, the request will be rejected. The bucket will also be refilled at a constant `refillRate` (token/s).
@@ -43,7 +43,7 @@ Key points:
 Run:
 
 ```bash
-go run main.go run -l traffic.txt --engine leaky-bucket
+go run main.go run --engine leaky-bucket
 ```
 
 Note that arrival time in the `traffic.txt` file is not encountered in this strategy. It only considers the number of requests received.
@@ -58,12 +58,31 @@ In this configuration, first 300 requests will be enqueued and processed at a ra
 
 Key points:
 
-- This strategy is effective if you want a smooth and steady rate of requests.
+- This strategy is effective if you want a smooth and steady rate of requests. Doesn't allow bursty traffic.
 - Requires a queue to store incoming requests. Queue might be full with old requests and cause starvation for more recent requests.
 
 ### 3. Fixed window
 
-TODO
+Run:
+
+```bash
+go run main.go run --engine fixed-window
+```
+
+This strategy devide time into fixed windows of duration `windowSize`. Each window has a limited number of requests (`capacity`). When a request comes in, it will be added to the current window. If the request counter exceeds the capacity, the request will be rejected. The window will be reset after `windowSize` time.
+
+For example, you want to handle 300 requests every minute:
+
+- capacity=300, windowSize=60
+
+In this configuration, we can handle on average 300 requests for every window of 60s. If the number of requests exceeds 300 in a window, the request will be rejected.
+
+But if the requests is distributed near the end of the window and at the very beginning of the next window, it might be accepted twice the number of requests allowed (600).
+
+Key points:
+
+- Pretty simple to implement.
+- Not accurate and allow twice the configured number of requests in the worst case.
 
 ### 4. Sliding window
 

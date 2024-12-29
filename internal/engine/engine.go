@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/minhthong582000/rate-limiter/internal/engine/fixedsizewindow"
 	"github.com/minhthong582000/rate-limiter/internal/engine/leakybucket"
 	"github.com/minhthong582000/rate-limiter/internal/engine/tokenbucket"
 )
@@ -46,18 +47,21 @@ func EngineFactory(opts ...Option) (Engine, error) {
 	var engine Engine
 	switch config.EngineType {
 	case FixedWindow:
-		return nil, nil
+		engine = fixedsizewindow.NewFixedSizeWindow(
+			config.Capacity,
+			config.windowSize,
+		)
 	case SlidingWindow:
 		return nil, nil
 	case TokenBucket:
 		engine = tokenbucket.NewTokenBucket(
-			config.Capacity,
+			float64(config.Capacity),
 			config.FillRate,
 			config.ConsumeRate,
 		)
 	case LeakyBucket:
 		engine = leakybucket.NewLeakyBucket(
-			uint64(config.Capacity),
+			config.Capacity,
 			config.LeakRate,
 			config.StopCh,
 		)

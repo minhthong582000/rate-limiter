@@ -4,7 +4,7 @@ import "time"
 
 type Config struct {
 	EngineType EngineType
-	Capacity   float64
+	Capacity   uint64
 	StopCh     <-chan struct{}
 
 	// Token bucket specific configuration
@@ -13,6 +13,9 @@ type Config struct {
 
 	// Leaky bucket specific configuration
 	LeakRate time.Duration
+
+	// Fixed size window specific configuration
+	windowSize time.Duration
 }
 
 type Option func(f *Config)
@@ -23,7 +26,7 @@ func WithEngineType(engineType EngineType) Option {
 	}
 }
 
-func WithCapacity(capacity float64) Option {
+func WithCapacity(capacity uint64) Option {
 	return func(f *Config) {
 		f.Capacity = capacity
 	}
@@ -50,5 +53,11 @@ func WithLeakRate(leakRate time.Duration) Option {
 func WithStopCh(stopCh <-chan struct{}) Option {
 	return func(f *Config) {
 		f.StopCh = stopCh
+	}
+}
+
+func WithWindowSize(windowSize time.Duration) Option {
+	return func(f *Config) {
+		f.windowSize = windowSize
 	}
 }
