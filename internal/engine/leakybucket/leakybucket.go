@@ -42,7 +42,7 @@ func (l *leakyBucket) AllowAt(arriveAt time.Time) bool {
 		return false
 	}
 
-	err := l.queue.Enqueue(arriveAt)
+	err := l.queue.PushBack(arriveAt)
 	if err != nil {
 		fmt.Println(err)
 		return false
@@ -65,7 +65,7 @@ func (l *leakyBucket) leak() {
 			l.mutex.Lock()
 
 			if !l.queue.IsEmpty() {
-				request, err := l.queue.Dequeue()
+				request, err := l.queue.PopFront()
 				if err != nil {
 					fmt.Println(err)
 				} else {

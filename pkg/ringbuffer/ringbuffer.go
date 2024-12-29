@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// RingBuffer or Circular Buffer
+// RingBuffer
 type RingBuffer[T any] struct {
 	buffer   []T
 	len      uint64
@@ -39,7 +39,7 @@ func (r *RingBuffer[T]) StartIndex() uint64 {
 	return r.start
 }
 
-func (r *RingBuffer[T]) Enqueue(value T) error {
+func (r *RingBuffer[T]) PushBack(value T) error {
 	if r.IsFull() {
 		return fmt.Errorf("ring is full")
 	}
@@ -51,7 +51,7 @@ func (r *RingBuffer[T]) Enqueue(value T) error {
 	return nil
 }
 
-func (r *RingBuffer[T]) Dequeue() (T, error) {
+func (r *RingBuffer[T]) PopFront() (T, error) {
 	if r.len == 0 {
 		return *new(T), fmt.Errorf("ring is empty")
 	}

@@ -21,16 +21,16 @@ func TestEnqueue(t *testing.T) {
 	rb := NewRingBuffer[int64](3)
 
 	// Enqueue 3 items
-	assert.NoError(t, rb.Enqueue(1))
-	assert.NoError(t, rb.Enqueue(2))
-	assert.NoError(t, rb.Enqueue(3))
+	assert.NoError(t, rb.PushBack(1))
+	assert.NoError(t, rb.PushBack(2))
+	assert.NoError(t, rb.PushBack(3))
 
 	// Buffer should now be full
 	assert.True(t, rb.IsFull())
 	assert.Equal(t, uint64(3), rb.Size())
 
 	// Attempt to enqueue beyond capacity
-	assert.Error(t, rb.Enqueue(4))
+	assert.Error(t, rb.PushBack(4))
 }
 
 // TestDequeue tests dequeuing values from the buffer
@@ -38,19 +38,19 @@ func TestDequeue(t *testing.T) {
 	rb := NewRingBuffer[string](3)
 
 	// Dequeue from an empty buffer
-	_, err := rb.Dequeue()
+	_, err := rb.PopFront()
 	assert.Error(t, err)
 
 	// Enqueue 2 items
-	assert.NoError(t, rb.Enqueue("10"))
-	assert.NoError(t, rb.Enqueue("20"))
+	assert.NoError(t, rb.PushBack("10"))
+	assert.NoError(t, rb.PushBack("20"))
 
 	// Dequeue and validate
-	value, err := rb.Dequeue()
+	value, err := rb.PopFront()
 	assert.NoError(t, err)
 	assert.Equal(t, "10", value)
 
-	value, err = rb.Dequeue()
+	value, err = rb.PopFront()
 	assert.NoError(t, err)
 	assert.Equal(t, "20", value)
 
@@ -63,24 +63,24 @@ func TestEnqueueDequeueCycle(t *testing.T) {
 	rb := NewRingBuffer[int64](2)
 
 	// Fill buffer
-	assert.NoError(t, rb.Enqueue(5))
-	assert.NoError(t, rb.Enqueue(10))
+	assert.NoError(t, rb.PushBack(5))
+	assert.NoError(t, rb.PushBack(10))
 	assert.True(t, rb.IsFull())
 
 	// Dequeue one item
-	value, err := rb.Dequeue()
+	value, err := rb.PopFront()
 	assert.NoError(t, err)
 	assert.Equal(t, int64(5), value)
 
 	// Add another item
-	assert.NoError(t, rb.Enqueue(15))
+	assert.NoError(t, rb.PushBack(15))
 
 	// Dequeue remaining items
-	value, err = rb.Dequeue()
+	value, err = rb.PopFront()
 	assert.NoError(t, err)
 	assert.Equal(t, int64(10), value)
 
-	value, err = rb.Dequeue()
+	value, err = rb.PopFront()
 	assert.NoError(t, err)
 	assert.Equal(t, int64(15), value)
 
@@ -93,10 +93,10 @@ func TestIsEmpty(t *testing.T) {
 
 	assert.True(t, rb.IsEmpty())
 
-	assert.NoError(t, rb.Enqueue(1))
+	assert.NoError(t, rb.PushBack(1))
 	assert.False(t, rb.IsEmpty())
 
-	_, _ = rb.Dequeue()
+	_, _ = rb.PopFront()
 	assert.True(t, rb.IsEmpty())
 }
 
@@ -106,8 +106,8 @@ func TestIsFull(t *testing.T) {
 
 	assert.False(t, rb.IsFull())
 
-	assert.NoError(t, rb.Enqueue(1))
-	assert.NoError(t, rb.Enqueue(2))
+	assert.NoError(t, rb.PushBack(1))
+	assert.NoError(t, rb.PushBack(2))
 	assert.True(t, rb.IsFull())
 }
 
@@ -115,8 +115,8 @@ func TestIsFull(t *testing.T) {
 func TestClear(t *testing.T) {
 	rb := NewRingBuffer[int64](3)
 
-	assert.NoError(t, rb.Enqueue(1))
-	assert.NoError(t, rb.Enqueue(2))
+	assert.NoError(t, rb.PushBack(1))
+	assert.NoError(t, rb.PushBack(2))
 
 	assert.False(t, rb.IsEmpty())
 
