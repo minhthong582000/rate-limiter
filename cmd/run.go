@@ -22,7 +22,7 @@ var (
 	// Leaky bucket specific configuration
 	drainDuration int64 // in milliseconds
 
-	// Fixed size window specific configuration
+	// Fixed size window and sliding window specific configuration
 	windowSize int64 // in milliseconds
 
 	// Simulation parameters
@@ -52,7 +52,7 @@ You can choose between different rate limiting engines such as fixed-window, sli
 			// Leaky bucket specific configuration
 			engine.WithLeakRate(time.Duration(drainDuration)*time.Millisecond),
 
-			// Fixed size window specific configuration
+			// Fixed size or sliding window specific configuration
 			engine.WithWindowSize(time.Duration(windowSize)*time.Millisecond),
 		)
 		if err != nil {
@@ -96,7 +96,7 @@ func init() {
 	rootCmd.AddCommand(runCmd)
 
 	// Shared flags
-	runCmd.PersistentFlags().StringVar(&engineType, "engine", "token-bucket", "Rate limiting engine (fixed-window, sliding-window, token-bucket, leaky-bucket)")
+	runCmd.PersistentFlags().StringVar(&engineType, "engine", "token-bucket", "Rate limiting engine (fixed-window, sliding-window-log, sliding-window-counter, token-bucket, leaky-bucket)")
 	runCmd.PersistentFlags().Int64Var(&capacity, "capacity", 5, "All: Maximum number of requests allowed")
 
 	// Token bucket specific flags
@@ -106,8 +106,8 @@ func init() {
 	// Leaky bucket specific flags
 	runCmd.PersistentFlags().Int64Var(&drainDuration, "drain-duration", 500, "Leaky bucket: Drain duration in milliseconds")
 
-	// Fixed size window specific flags
-	runCmd.PersistentFlags().Int64Var(&windowSize, "window-size", 1000, "Fixed window: Window size in milliseconds")
+	// Fixed size window and sliding window specific flags
+	runCmd.PersistentFlags().Int64Var(&windowSize, "window-size", 1000, "Fixed/Sliding window: Window size in milliseconds")
 
 	// Simulation parameters
 	runCmd.PersistentFlags().Int64Var(&numRequests, "num-requests", 100, "Simulator: Number of requests to simulate")

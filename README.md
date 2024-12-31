@@ -42,7 +42,7 @@ In this configuration, we can handle on average 1 req for every 0.2s and allow u
 Key points:
 
 - This strategy is effective in controlling bursty traffic but not sustained overload traffic.
-- Pretty easy to implement and memory-efficient.
+- Pretty easy to implement and memory-efficient. But requires locking or atomic operations to update the token counter in high concurrency scenarios.
 
 ### 2. Leaky bucket
 
@@ -77,7 +77,7 @@ This strategy devide time into fixed windows of duration `windowSize`. Each wind
 
 For example, you want to handle 300 requests every minute:
 
-- capacity=300, window-size=60
+- capacity=300, window-size=60000 (ms)
 
 In this configuration, we can handle on average 300 requests for every window of 60s. If the number of requests exceeds 300 in a window, the request will be rejected.
 
@@ -85,9 +85,28 @@ But if the requests is distributed near the end of the window and at the very be
 
 Key points:
 
-- Pretty simple to implement.
+- Pretty simple to implement. But will envolve locking or atomic operations to update the request counter in high concurrency scenarios.
 - Not accurate and allow twice the configured number of requests in the worst case.
 
-### 4. Sliding window
+### 4. Sliding window Log
 
-TODO
+Run:
+
+```bash
+go run main.go run --engine=sliding-window-log --capacity=5 --window-size=1000 --num-requests=20 --wait-time=100
+```
+
+This strategy is an improvement over the fixed window strategy. It stores the timestamp of each request in a log (requestLog), this log can be implemented using a queue, Redis sorted set, etc. When a request comes in, it will discard all requests that are outside the current window (`now - requestTS > window-size`). After that, it will count the number of requests in the remaining log. If the number of requests exceeds the capacity, the request will be rejected.
+
+For example, you want to handle 300 requests every minute:
+
+- capacity=300, window-size=60000 (ms)
+
+In this configuration, we can handle on average 300 requests for every window of 60s. If the number of requests exceeds 300 in a window, the request will be rejected. This strategy will not suffer from the same issue as the fixed window strategy.
+
+Key points:
+
+- Very precise. Does not suffer from boundary issues.
+- Not memory-efficient. Requires storing all requests in the log.
+- CPU-intensive. Requires scanning the log for each new request to filter out old requests and count the number of requests in the current window.
+- 2 issues above lead to scalability problems when the number of requests and the window size increase.

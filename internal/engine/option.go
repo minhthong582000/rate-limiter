@@ -14,7 +14,7 @@ type Config struct {
 	// Leaky bucket specific configuration
 	LeakRate time.Duration
 
-	// Fixed size window specific configuration
+	// Fixed size window and sliding window specific configuration
 	windowSize time.Duration
 }
 

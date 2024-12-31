@@ -52,7 +52,7 @@ func (r *RingBuffer[T]) PushBack(value T) error {
 }
 
 func (r *RingBuffer[T]) PopFront() (T, error) {
-	if r.len == 0 {
+	if r.IsEmpty() {
 		return *new(T), fmt.Errorf("ring is empty")
 	}
 
@@ -62,6 +62,14 @@ func (r *RingBuffer[T]) PopFront() (T, error) {
 	r.start = (r.start + 1) % r.capacity
 
 	return value, nil
+}
+
+func (r *RingBuffer[T]) PeekFront() (T, error) {
+	if r.IsEmpty() {
+		return *new(T), fmt.Errorf("ring is empty")
+	}
+
+	return r.buffer[r.start], nil
 }
 
 func (r *RingBuffer[T]) Clear() {

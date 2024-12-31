@@ -80,6 +80,9 @@ func TestEnqueueDequeueCycle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(10), value)
 
+	value, err = rb.PeekFront()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(15), value)
 	value, err = rb.PopFront()
 	assert.NoError(t, err)
 	assert.Equal(t, int64(15), value)
@@ -124,4 +127,19 @@ func TestClear(t *testing.T) {
 	assert.True(t, rb.IsEmpty())
 	assert.Equal(t, uint64(0), rb.Size())
 	assert.Equal(t, uint64(0), rb.StartIndex())
+}
+
+// TestPeekFront tests the PeekFront method
+func TestPeekFront(t *testing.T) {
+	rb := NewRingBuffer[int64](3)
+
+	_, err := rb.PeekFront()
+	assert.Error(t, err, "PeekFront on empty buffer should return an error")
+
+	assert.NoError(t, rb.PushBack(1))
+	assert.NoError(t, rb.PushBack(2))
+
+	value, err := rb.PeekFront()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), value)
 }

@@ -6,24 +6,28 @@ import (
 
 	"github.com/minhthong582000/rate-limiter/internal/engine/fixedsizewindow"
 	"github.com/minhthong582000/rate-limiter/internal/engine/leakybucket"
+	"github.com/minhthong582000/rate-limiter/internal/engine/slidingwindow"
 	"github.com/minhthong582000/rate-limiter/internal/engine/tokenbucket"
 )
 
 type EngineType string
 
 const (
-	FixedWindow   EngineType = "fixed-window"
-	SlidingWindow EngineType = "sliding-window"
-	TokenBucket   EngineType = "token-bucket"
-	LeakyBucket   EngineType = "leaky-bucket"
+	FixedWindow          EngineType = "fixed-window"
+	SlidingWindowLog     EngineType = "sliding-window-log"
+	SlidingWindowCounter EngineType = "sliding-window-counter"
+	TokenBucket          EngineType = "token-bucket"
+	LeakyBucket          EngineType = "leaky-bucket"
 )
 
 func StringToEngineType(s string) EngineType {
 	switch s {
 	case "fixed-window":
 		return FixedWindow
-	case "sliding-window":
-		return SlidingWindow
+	case "sliding-window-log":
+		return SlidingWindowLog
+	case "sliding-window-counter":
+		return SlidingWindowCounter
 	case "token-bucket":
 		return TokenBucket
 	case "leaky-bucket":
@@ -51,7 +55,12 @@ func EngineFactory(opts ...Option) (Engine, error) {
 			config.Capacity,
 			config.windowSize,
 		)
-	case SlidingWindow:
+	case SlidingWindowLog:
+		engine = slidingwindow.NewSlidingWindowLogs(
+			config.Capacity,
+			config.windowSize,
+		)
+	case SlidingWindowCounter:
 		return nil, nil
 	case TokenBucket:
 		engine = tokenbucket.NewTokenBucket(
