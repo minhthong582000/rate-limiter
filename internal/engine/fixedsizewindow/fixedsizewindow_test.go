@@ -11,22 +11,56 @@ import (
 
 // TestBasicRateLimiting tests basic behavior of the fixed-size window rate limiter.
 func TestBasicRateLimiting(t *testing.T) {
-	limiter := NewFixedSizeWindow(5, time.Second)
+	limiter := NewFixedSizeWindow(3, time.Second)
 
-	// Within the same window, allow up to 5 requests.
-	for i := 0; i < 5; i++ {
-		assert.True(t, limiter.Allow(), "Request %d should be allowed", i+1)
+	requests := []string{
+		// 4 requests at the same time
+		"2025-01-01T00:00:00Z",
+		"2025-01-01T00:00:00Z",
+		"2025-01-01T00:00:00Z",
+		"2025-01-01T00:00:00Z",
+
+		// 1 request after 2 second
+		"2025-01-01T00:00:02Z",
 	}
 
-	// 6th request should be denied
-	assert.False(t, limiter.Allow(), "6th request should be denied within the same window")
+	// First 3 requests should be allowed
+	for i := 0; i < 3; i++ {
+		ts, _ := time.Parse(time.RFC3339, requests[i])
+		assert.True(t, limiter.AllowAt(ts), "Request %d should be allowed", i+1)
+	}
 
-	// Wait for the window to reset
-	time.Sleep(time.Second + 10*time.Millisecond)
+	// 4th request should be denied
+	ts, _ := time.Parse(time.RFC3339, requests[3])
+	assert.False(t, limiter.AllowAt(ts), "Request 3 should be denied")
 
-	// New window, requests should be allowed again
-	for i := 0; i < 5; i++ {
-		assert.True(t, limiter.Allow(), "Request %d in new window should be allowed", i+1)
+	// 5th requests should be allowed after the window resets
+	ts, _ = time.Parse(time.RFC3339, requests[4])
+	assert.True(t, limiter.AllowAt(ts), "Request after window reset should be allowed")
+}
+
+// TestRequestAtBoundary tests the rate limiter behavior at the boundary of the window.
+func TestRequestAtBoundary(t *testing.T) {
+	limiter := NewFixedSizeWindow(3, 10*time.Second)
+
+	// Requests timestamps within 11 seconds window
+	requests := []string{
+		"2025-01-01T00:00:00Z",
+
+		// 2 requests after 9 seconds
+		"2025-01-01T00:00:09Z",
+		"2025-01-01T00:00:09Z",
+
+		// 3 new requests after first request 10 seconds
+		"2025-01-01T00:00:11Z",
+		"2025-01-01T00:00:11Z",
+		"2025-01-01T00:00:11Z",
+	}
+
+	// All requests should be allowed
+	for i := 0; i < 6; i++ {
+		ts, _ := time.Parse(time.RFC3339, requests[i])
+		assert.True(t, limiter.AllowAt(ts), "Request %d should be allowed", i+1)
 	}
 }
 
