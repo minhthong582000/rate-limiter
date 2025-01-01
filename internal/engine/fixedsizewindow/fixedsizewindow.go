@@ -38,9 +38,8 @@ func NewFixedSizeWindow(
 
 func (f *fixedSizeWindow) AllowAt(arriveAt time.Time) bool {
 	now := arriveAt.UnixMilli()
-	done := false
 
-	for !done {
+	for {
 		lastState := f.state.Load()
 		elapsed := now - lastState.lastTime
 
@@ -49,26 +48,34 @@ func (f *fixedSizeWindow) AllowAt(arriveAt time.Time) bool {
 			return false
 		}
 
+		// Reset the window if new request arrives after the window has expired
+		// or this is the first request
 		if lastState.lastTime == 0 || elapsed > f.windowSize.Milliseconds() {
-			done = f.state.CompareAndSwap(lastState, &state{
+			newState := &state{
 				currCount: 1,
 				lastTime:  now,
-			})
+			}
+			if f.state.CompareAndSwap(lastState, newState) {
+				return true
+			}
+			// Retry if CAS fails
 			continue
 		}
 
 		if lastState.currCount < f.capacity {
-			done = f.state.CompareAndSwap(lastState, &state{
+			newState := &state{
 				currCount: lastState.currCount + 1,
 				lastTime:  lastState.lastTime,
-			})
+			}
+			if f.state.CompareAndSwap(lastState, newState) {
+				return true
+			}
+			// Retry if CAS fails
 			continue
 		}
 
 		return false
 	}
-
-	return true
 }
 
 func (f *fixedSizeWindow) Allow() bool {
