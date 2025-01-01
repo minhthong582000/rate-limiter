@@ -16,7 +16,7 @@ var (
 	capacity   int64
 
 	// Token bucket specific configuration
-	fillDuration float64
+	fillDuration float64 // in milliseconds
 	consumeRate  float64
 
 	// Leaky bucket specific configuration
@@ -37,6 +37,41 @@ var runCmd = &cobra.Command{
 	Short: "Start the rate limiter engine",
 	Long: `A command to run the rate limiter engine based on the selected engine type.
 You can choose between different rate limiting engines such as fixed-window, sliding-window, token-bucket, and leaky-bucket.`,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if capacity <= 0 {
+			return fmt.Errorf("capacity must be greater than 0")
+		}
+
+		if fillDuration <= 0 {
+			return fmt.Errorf("fill duration must be greater than 0")
+		}
+
+		if consumeRate <= 0 {
+			return fmt.Errorf("consume rate must be greater than 0")
+		}
+
+		if drainDuration <= 0 {
+			return fmt.Errorf("drain duration must be greater than 0")
+		}
+
+		if windowSize <= 0 {
+			return fmt.Errorf("window size must be greater than 0")
+		}
+
+		if numRequests <= 0 {
+			return fmt.Errorf("number of requests must be greater than 0")
+		}
+
+		if waitTime <= 0 {
+			return fmt.Errorf("wait time must be greater than 0")
+		}
+
+		if jitter < 0 || jitter > waitTime {
+			return fmt.Errorf("jitter must be between 0 and wait time")
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stopCh := signals.SetupSignalHandler()
 
@@ -46,7 +81,7 @@ You can choose between different rate limiting engines such as fixed-window, sli
 			engine.WithCapacity(uint64(capacity)),
 
 			// Token bucket specific configuration
-			engine.WithFillRate(1.0/fillDuration),
+			engine.WithFillRate(1000.0/fillDuration),
 			engine.WithConsumeRate(consumeRate),
 
 			// Leaky bucket specific configuration
@@ -68,7 +103,7 @@ You can choose between different rate limiting engines such as fixed-window, sli
 					fmt.Printf("Request %d ACCEPTED\n", i)
 				}
 
-				if jitter > 0 && jitter <= waitTime {
+				if jitter > 0 {
 					randomJitter, err := rand.Int(rand.Reader, big.NewInt(jitter*2))
 					if err != nil {
 						errCh <- err
@@ -100,7 +135,7 @@ func init() {
 	runCmd.PersistentFlags().Int64Var(&capacity, "capacity", 5, "All: Maximum number of requests allowed")
 
 	// Token bucket specific flags
-	runCmd.PersistentFlags().Float64Var(&fillDuration, "fill-duration", 0.5, "Token bucket: token refill duration in seconds. Default is 0.5s (2 tokens/second)")
+	runCmd.PersistentFlags().Float64Var(&fillDuration, "fill-duration", 0.5, "Token bucket: token refill duration in milliseconds. Default is 500ms (2 tokens/second)")
 	runCmd.PersistentFlags().Float64Var(&consumeRate, "consume-rate", 1, "Token bucket: Token consume rate per request")
 
 	// Leaky bucket specific flags

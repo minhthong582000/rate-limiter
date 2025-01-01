@@ -6,11 +6,15 @@ import (
 	"time"
 )
 
+type state struct {
+	currCount uint64
+	lastTime  int64
+}
+
 type fixedSizeWindow struct {
 	capacity   uint64 // Max requests allowed in the window
 	windowSize time.Duration
-	currCount  atomic.Uint64
-	lastTime   atomic.Int64
+	state      atomic.Pointer[state]
 }
 
 func NewFixedSizeWindow(
@@ -21,36 +25,51 @@ func NewFixedSizeWindow(
 		panic("window size must be greater than 0")
 	}
 
-	return &fixedSizeWindow{
+	f := &fixedSizeWindow{
 		capacity:   capacity,
 		windowSize: windowSize,
 	}
+	f.state.Store(&state{
+		currCount: 0,
+		lastTime:  0,
+	})
+	return f
 }
 
 func (f *fixedSizeWindow) AllowAt(arriveAt time.Time) bool {
-	now := arriveAt.UnixNano()
-	lastTime := f.lastTime.Load()
-	elapsed := now - lastTime
+	now := arriveAt.UnixMilli()
+	done := false
 
-	if elapsed < 0 {
-		fmt.Println("Warning: Negative elapsed time detected. Possible clock skew.")
+	for !done {
+		lastState := f.state.Load()
+		elapsed := now - lastState.lastTime
+		fmt.Println(lastState.currCount, elapsed)
+
+		if elapsed < 0 {
+			fmt.Println("Warning: Negative elapsed time detected. Possible clock skew.")
+			return false
+		}
+
+		if lastState.lastTime == 0 || elapsed > f.windowSize.Milliseconds() {
+			done = f.state.CompareAndSwap(lastState, &state{
+				currCount: 1,
+				lastTime:  now,
+			})
+			continue
+		}
+
+		if lastState.currCount < f.capacity {
+			done = f.state.CompareAndSwap(lastState, &state{
+				currCount: lastState.currCount + 1,
+				lastTime:  lastState.lastTime,
+			})
+			continue
+		}
+
 		return false
 	}
 
-	if lastTime == 0 || elapsed > f.windowSize.Nanoseconds() {
-		if f.lastTime.CompareAndSwap(lastTime, now) {
-			f.currCount.Store(1)
-			return true
-		}
-	}
-
-	if f.currCount.Load() < f.capacity {
-		if f.currCount.Add(1) <= f.capacity {
-			return true
-		}
-	}
-
-	return false
+	return true
 }
 
 func (f *fixedSizeWindow) Allow() bool {

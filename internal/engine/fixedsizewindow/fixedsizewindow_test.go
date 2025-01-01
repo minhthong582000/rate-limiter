@@ -95,11 +95,19 @@ func TestConcurrentAccess(t *testing.T) {
 func TestNegativeElapsedTime(t *testing.T) {
 	limiter := NewFixedSizeWindow(5, time.Second)
 
-	// Simulate a scenario where arriveAt is earlier than lastTime
-	limiter.Allow()                                                     // First request
-	limiter.lastTime.Store(time.Now().Add(10 * time.Second).UnixNano()) // Future time
+	requests := []string{
+		"2025-01-02T00:00:00Z",
 
-	assert.False(t, limiter.AllowAt(time.Now()), "Request with negative elapsed time should fail")
+		// Previous day
+		"2025-01-01T00:00:00Z",
+	}
+
+	ts, _ := time.Parse(time.RFC3339, requests[0])
+	limiter.AllowAt(ts)
+
+	// Simulate a scenario where arriveAt is earlier than lastTime
+	ts, _ = time.Parse(time.RFC3339, requests[1])
+	assert.False(t, limiter.AllowAt(ts), "Request with negative elapsed time should fail")
 }
 
 // TestZeroWindow ensures behavior when window time is zero (edge case).

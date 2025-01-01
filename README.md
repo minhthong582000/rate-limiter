@@ -28,14 +28,14 @@ You can adjust the requests simulation by specifying the following flags:
 Run:
 
 ```bash
-go run main.go run --engine=token-bucket --capacity=5 --fill-duration=0.2 --num-requests=20 --wait-time=100
+go run main.go run --engine=token-bucket --capacity=5 --fill-duration=200 --num-requests=20 --wait-time=100
 ```
 
-This strategy base on the idea of a bucket that can hold a limited number of tokens (`capacity`). A request comming in will consume a token from the bucket if there are sufficient tokens available. If the bucket is empty, the request will be rejected. The bucket will also be refilled at a constant `refillRate = 1/fill-duration` (token/s).
+This strategy base on the idea of a bucket that can hold a limited number of tokens (`capacity`). A request comming in will consume a token from the bucket if there are sufficient tokens available. If the bucket is empty, the request will be rejected. The bucket will also be refilled at a constant `refillRate = 1000/fill-duration` (token/s).
 
 For example, you want to handle 300 requests every minute:
 
-- capacity=300, fill-duration=0.2 (1 token every 0.2s)
+- capacity=300, fill-duration=200ms (1 token every 0.2s)
 
 In this configuration, we can handle on average 1 req for every 0.2s and allow users to burst up to 300 requests at once.
 
