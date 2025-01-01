@@ -43,7 +43,6 @@ func (f *fixedSizeWindow) AllowAt(arriveAt time.Time) bool {
 	for !done {
 		lastState := f.state.Load()
 		elapsed := now - lastState.lastTime
-		fmt.Println(lastState.currCount, elapsed)
 
 		if elapsed < 0 {
 			fmt.Println("Warning: Negative elapsed time detected. Possible clock skew.")
