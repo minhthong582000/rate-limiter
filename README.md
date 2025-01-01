@@ -4,10 +4,11 @@
 
 Simple rate limiter implementation using many different strategies:
 
-- Fixed window
-- Sliding window
-- Token bucket (default)
-- Leaky bucket
+- [x] Fixed window
+- [x] Sliding window log
+- [ ] Sliding window counter
+- [x] Token bucket (default)
+- [x] Leaky bucket
 
 ## Usage
 
@@ -110,3 +111,7 @@ Key points:
 - Not memory-efficient. Requires storing all requests in the log.
 - CPU-intensive. Requires scanning the log for each new request to filter out old requests and count the number of requests in the current window.
 - 2 issues above lead to scalability problems when the number of requests and the window size increase.
+
+### 5. Sliding window Counter
+
+TODO
