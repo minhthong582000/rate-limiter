@@ -38,7 +38,9 @@ func StringToEngineType(s string) EngineType {
 }
 
 type Engine interface {
+	// Allow checks if a request is allowed to be processed now
 	Allow() bool
+	// AllowAt checks if a request is allowed to be processed at the given time
 	AllowAt(arriveAt time.Time) bool
 }
 
