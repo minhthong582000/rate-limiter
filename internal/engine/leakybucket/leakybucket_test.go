@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestLeakyBucket_New ensures the constructor initializes the leaky bucket correctly.
-func TestLeakyBucket_New(t *testing.T) {
+// TestNewLeakyBucket ensures the constructor initializes the leaky bucket correctly.
+func TestNewLeakyBucket(t *testing.T) {
 	stopCh := make(chan struct{})
 	limiter := NewLeakyBucket(5, time.Second, stopCh)
 
