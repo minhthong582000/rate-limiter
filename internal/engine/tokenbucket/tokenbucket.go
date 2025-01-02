@@ -73,7 +73,6 @@ func (t *tokenBucket) AllowAt(arriveAt time.Time) bool {
 			t.capacity,
 			lastState.currToken+t.fillRate*float64(elapsed),
 		)
-		fmt.Println(newState.currToken)
 		if newState.currToken >= t.consumeRate {
 			newState.currToken -= t.consumeRate
 			if t.state.CompareAndSwap(lastState, newState) {
