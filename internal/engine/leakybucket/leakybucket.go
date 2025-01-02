@@ -18,12 +18,20 @@ type leakyBucket struct {
 
 func NewLeakyBucket(
 	capacity uint64,
-	leakRate time.Duration,
+	drainRate time.Duration,
 	stopCh <-chan struct{},
 ) *leakyBucket {
+	if drainRate <= 0 {
+		panic("drain rate must be greater than 0")
+	}
+
+	if capacity <= 0 {
+		panic("capacity must be greater than 0")
+	}
+
 	l := &leakyBucket{
 		capacity:  capacity,
-		drainRate: leakRate,
+		drainRate: drainRate,
 		queue:     ringbuffer.NewRingBuffer[time.Time](capacity),
 		stopCh:    stopCh,
 	}
