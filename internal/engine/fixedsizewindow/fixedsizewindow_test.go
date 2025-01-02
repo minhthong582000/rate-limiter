@@ -9,8 +9,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestBasicRateLimiting tests basic behavior of the fixed-size window rate limiter.
-func TestBasicRateLimiting(t *testing.T) {
+// TestNewFixedSizeWindow tests the fixed-size window rate limiter constructor.
+func TestNewFixedSizeWindow(t *testing.T) {
+	limiter := NewFixedSizeWindow(3, time.Second)
+
+	assert.Equal(t, uint64(3), limiter.capacity, "Capacity should be 3")
+	assert.Equal(t, time.Second, limiter.windowSize, "Window size should be 1 second")
+
+	state := limiter.state.Load()
+	assert.Equal(t, uint64(0), state.currCount, "Initial count should be 0")
+	assert.Equal(t, int64(0), state.lastTime, "Initial last time should be 0")
+}
+
+// TestFixedSizeWindow_Basic tests basic behavior of the fixed-size window rate limiter.
+func TestFixedSizeWindow_Basic(t *testing.T) {
 	limiter := NewFixedSizeWindow(3, time.Second)
 
 	requests := []string{
@@ -39,8 +51,8 @@ func TestBasicRateLimiting(t *testing.T) {
 	assert.True(t, limiter.AllowAt(ts), "Request after window reset should be allowed")
 }
 
-// TestRequestAtBoundary tests the rate limiter behavior at the boundary of the window.
-func TestRequestAtBoundary(t *testing.T) {
+// TestFixedSizeWindow_RequestAtBoundary tests the rate limiter behavior at the boundary of the window.
+func TestFixedSizeWindow_RequestAtBoundary(t *testing.T) {
 	limiter := NewFixedSizeWindow(3, 10*time.Second)
 
 	// Requests timestamps within 11 seconds window
@@ -64,8 +76,8 @@ func TestRequestAtBoundary(t *testing.T) {
 	}
 }
 
-// TestConcurrentAccess tests concurrent access to the rate limiter.
-func TestConcurrentAccess(t *testing.T) {
+// TestFixedSizeWindow_ConcurrentAccess tests concurrent access to the rate limiter.
+func TestFixedSizeWindow_ConcurrentAccess(t *testing.T) {
 	limiter := NewFixedSizeWindow(10, time.Second)
 	var wg sync.WaitGroup
 
@@ -91,8 +103,8 @@ func TestConcurrentAccess(t *testing.T) {
 	assert.Equal(t, uint64(10), failCount.Load(), "Remaining 10 requests should fail")
 }
 
-// TestNegativeElapsedTime ensures no behavior breaks with a negative elapsed time.
-func TestNegativeElapsedTime(t *testing.T) {
+// TestFixedSizeWindow_NegativeElapsedTime ensures no behavior breaks with a negative elapsed time.
+func TestFixedSizeWindow_NegativeElapsedTime(t *testing.T) {
 	limiter := NewFixedSizeWindow(5, time.Second)
 
 	requests := []string{
@@ -110,8 +122,8 @@ func TestNegativeElapsedTime(t *testing.T) {
 	assert.False(t, limiter.AllowAt(ts), "Request with negative elapsed time should fail")
 }
 
-// TestZeroWindow ensures behavior when window time is zero (edge case).
-func TestZeroWindow(t *testing.T) {
+// TestFixedSizeWindow_ZeroWindow ensures behavior when window time is zero (edge case).
+func TestFixedSizeWindow_ZeroWindow(t *testing.T) {
 	assert.Panics(t, func() {
 		NewFixedSizeWindow(5, 0)
 	}, "Creating a rate limiter with zero window size should panic")

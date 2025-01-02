@@ -9,14 +9,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestBasicRateLimiting validates basic token bucket behavior.
-func TestBasicRateLimiting(t *testing.T) {
-	bucket := NewTokenBucket(3, 1, 1) // capacity=3, fillRate=1/ms, consumeRate=1
+// TestNewTokenBucket tests token bucket constructor.
+func TestNewTokenBucket(t *testing.T) {
+	bucket := NewTokenBucket(5, 1, 1) // capacity=5, fillRate=1/ms, consumeRate=1
 
-	// Check the object properties
-	assert.Equal(t, float64(3), bucket.capacity, "Capacity should be 3")
-	assert.Equal(t, float64(1), bucket.fillRate, "Fill rate should be 1")
-	assert.Equal(t, float64(1), bucket.consumeRate, "Consume rate should be 1")
+	assert.NotNil(t, bucket)
+	assert.Equal(t, float64(5), bucket.capacity)
+	assert.Equal(t, float64(1), bucket.fillRate)
+	assert.Equal(t, float64(1), bucket.consumeRate)
+
+	state := bucket.state.Load()
+	assert.Equal(t, float64(5), state.currToken)
+	assert.Equal(t, int64(0), state.lastTime)
+}
+
+// TestTokenBucket_Basic validates basic token bucket behavior.
+func TestTokenBucket_Basic(t *testing.T) {
+	bucket := NewTokenBucket(3, 1, 1) // capacity=3, fillRate=1/ms, consumeRate=1
 
 	requests := []string{
 		// 4 requests at the same time
@@ -44,8 +53,8 @@ func TestBasicRateLimiting(t *testing.T) {
 	assert.True(t, bucket.AllowAt(ts), "Request 5 should be allowed after token refill")
 }
 
-// TestConcurrentAccess verifies thread safety of the token bucket.
-func TestConcurrentAccess(t *testing.T) {
+// TestTokenBucket_ConcurrentAccess verifies thread safety of the token bucket.
+func TestTokenBucket_ConcurrentAccess(t *testing.T) {
 	bucket := NewTokenBucket(10, 1.0/1000, 1) // capacity=10, fillRate=1/s, consumeRate=1
 
 	var wg sync.WaitGroup
@@ -71,8 +80,8 @@ func TestConcurrentAccess(t *testing.T) {
 	t.Logf("Allowed: %d, Rejected: %d", successCount.Load(), failCount.Load())
 }
 
-// TestNegativeElapsedTime ensures that negative elapsed time is handled safely.
-func TestNegativeElapsedTime(t *testing.T) {
+// TestTokenBucket_NegativeElapsedTime ensures that negative elapsed time is handled safely.
+func TestTokenBucket_NegativeElapsedTime(t *testing.T) {
 	bucket := NewTokenBucket(5, 1, 1) // capacity=5, fillRate=1/ms, consumeRate=1
 
 	requests := []string{
@@ -89,22 +98,22 @@ func TestNegativeElapsedTime(t *testing.T) {
 	assert.False(t, bucket.AllowAt(ts), "Request with negative elapsed time should fail")
 }
 
-// TestZeroFillRate checks edge case with zero fill rate.
-func TestZeroFillRate(t *testing.T) {
+// TestTokenBucket_ZeroFillRate checks edge case with zero fill rate.
+func TestTokenBucket_ZeroFillRate(t *testing.T) {
 	assert.Panics(t, func() {
 		NewTokenBucket(5, 0, 1)
 	}, "Creating a token bucket with zero fill rate should panic")
 }
 
-// TestZeroConsumeRate checks edge case with zero consume rate.
-func TestZeroConsumeRate(t *testing.T) {
+// TestTokenBucket_ZeroConsumeRate checks edge case with zero consume rate.
+func TestTokenBucket_ZeroConsumeRate(t *testing.T) {
 	assert.Panics(t, func() {
 		NewTokenBucket(5, 1, 0)
 	}, "Creating a token bucket with zero consume rate should panic")
 }
 
-// TestConsumeRateExceedsCapacity checks edge case with invalid consume rate.
-func TestConsumeRateExceedsCapacity(t *testing.T) {
+// TestTokenBucket_ConsumeRateExceedsCapacity checks edge case with invalid consume rate.
+func TestTokenBucket_ConsumeRateExceedsCapacity(t *testing.T) {
 	assert.Panics(t, func() {
 		NewTokenBucket(5, 1, 10)
 	}, "Creating a token bucket with consume rate exceeding capacity should panic")

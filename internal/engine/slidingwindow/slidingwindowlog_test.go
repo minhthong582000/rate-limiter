@@ -9,8 +9,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestSlidingWindowLogs tests the behavior of the sliding window logs
-func TestSlidingWindowLogs(t *testing.T) {
+// TestNewSlidingWindowLogs tests sliding window logs constructor
+func TestNewSlidingWindowLogs(t *testing.T) {
+	limiter := NewSlidingWindowLogs(3, 1*time.Second)
+
+	assert.Equal(t, uint64(3), limiter.capacity, "Capacity should be 3")
+	assert.Equal(t, 1*time.Second, limiter.windowSize, "Window size should be 1 second")
+	assert.NotNil(t, limiter.requestLog, "Request log should be initialized")
+}
+
+// TestSlidingWindowLogs_Basic tests the basic behavior of the sliding window logs
+func TestSlidingWindowLogs_Basic(t *testing.T) {
 	limiter := NewSlidingWindowLogs(3, 1*time.Second) // 3 requests per 1 second
 
 	requests := []string{
@@ -39,8 +48,8 @@ func TestSlidingWindowLogs(t *testing.T) {
 	assert.True(t, limiter.AllowAt(ts), "Request 5 (after window reset) should be allowed")
 }
 
-// TestRequestAtBoundary tests the rate limiter behavior at the boundary of the window.
-func TestRequestAtBoundary(t *testing.T) {
+// TestSlidingWindowLogs_RequestAtBoundary tests the rate limiter behavior at the boundary of the window.
+func TestSlidingWindowLogs_RequestAtBoundary(t *testing.T) {
 	limiter := NewSlidingWindowLogs(3, 10*time.Second)
 
 	// Requests timestamps within 11 seconds window
@@ -72,8 +81,8 @@ func TestRequestAtBoundary(t *testing.T) {
 	assert.False(t, limiter.AllowAt(ts), "Request 6 should be denied")
 }
 
-// TestSlidingWindowLogs_Concurrency tests thread safety under concurrent access
-func TestSlidingWindowLogs_Concurrency(t *testing.T) {
+// TestSlidingWindowLogs_ConcurrentAccess tests thread safety under concurrent access
+func TestSlidingWindowLogs_ConcurrentAccess(t *testing.T) {
 	limiter := NewSlidingWindowLogs(10, 10*time.Second) // 10 requests per second
 
 	var wg sync.WaitGroup
