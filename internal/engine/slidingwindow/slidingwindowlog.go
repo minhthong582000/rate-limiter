@@ -42,10 +42,9 @@ func (f *slidingWindowLogs) AllowAt(arriveAt time.Time) bool {
 		}
 	}
 
-	if f.requestLog.Size() < f.capacity {
-		if err := f.requestLog.PushBack(arriveAt); err == nil {
-			return true
-		}
+	if !f.requestLog.IsFull() {
+		f.requestLog.PushBack(arriveAt)
+		return true
 	}
 
 	return false
