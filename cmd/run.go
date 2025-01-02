@@ -81,7 +81,7 @@ You can choose between different rate limiting engines such as fixed-window, sli
 			engine.WithCapacity(uint64(capacity)),
 
 			// Token bucket specific configuration
-			engine.WithFillRate(1000.0/fillDuration),
+			engine.WithFillRate(1.0/fillDuration),
 			engine.WithConsumeRate(consumeRate),
 
 			// Leaky bucket specific configuration
@@ -135,7 +135,7 @@ func init() {
 	runCmd.PersistentFlags().Int64Var(&capacity, "capacity", 5, "All: Maximum number of requests allowed")
 
 	// Token bucket specific flags
-	runCmd.PersistentFlags().Float64Var(&fillDuration, "fill-duration", 0.5, "Token bucket: token refill duration in milliseconds. Default is 500ms (2 tokens/second)")
+	runCmd.PersistentFlags().Float64Var(&fillDuration, "fill-duration", 500, "Token bucket: token refill duration in milliseconds. Default is 500ms (2 tokens/second)")
 	runCmd.PersistentFlags().Float64Var(&consumeRate, "consume-rate", 1, "Token bucket: Token consume rate per request")
 
 	// Leaky bucket specific flags
