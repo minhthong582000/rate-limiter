@@ -46,9 +46,6 @@ func (s *slidingWindowCounter) AllowAt(arriveAt time.Time) bool {
 		// Copy the last state and use it throughout the calculation
 		newState := *lastState
 
-		// Print the address of lastState and newState
-		fmt.Printf("lastState: %p, newState: %p\n", lastState, &newState)
-
 		currWindow := now / s.windowSize
 
 		if currWindow < lastState.currWindow {
