@@ -4,11 +4,11 @@
 
 Simple rate limiter implementation using many different strategies:
 
-- [x] Fixed window
-- [x] Sliding window log
-- [x] Sliding window counter
-- [x] Token bucket (default)
-- [x] Leaky bucket
+- Fixed window
+- Sliding window log
+- Sliding window counter
+- Token bucket
+- Leaky bucket
 
 ### Dependencies
 
@@ -159,7 +159,7 @@ Distributed under the GPLv3 License. See license `LICENSE.md` file for more info
   - [x] Fixed window
   - [x] Sliding window log
   - [x] Sliding window counter
-  - [x] Token bucket (default)
+  - [x] Token bucket
   - [x] Leaky bucket
 - [ ] Implement request simulator
 - [ ] Expose metrics.
