@@ -141,7 +141,7 @@ About the configuration, let's say you want to handle 300 requests every minute:
 
 In this configuration, we can handle on average 300 requests for every (sliding) window of 60s. If the estimated number of requests exceeds 300 in a window, the request will be rejected.
 
-The formula use in this strategy assumes that the number of requests is uniformly distributed in all windows which is why it's an approximation. But in reality, Cloudflare has been using this strategy in their rate limiter and shown [good results](https://blog.cloudflare.com/counting-things-a-lot-of-different-things/).
+The formula use in this strategy assumes that the number of requests is uniformly distributed in all windows which is why it's an approximation. But in reality, Cloudflare has been using this strategy in their rate limiter and shown [good results](https://blog.cloudflare.com/counting-things-a-lot-of-different-things/#conclusion).
 
 Key points:
 
@@ -169,7 +169,7 @@ Choosing the right rate-limiting strategy depends on a combination of your syste
   - Highly Scalable: Token Bucket and Sliding Window Counter are easier to scale by integrating with distributed caching system like Redis, Memcached... with lower resource overhead.
   - Limited Scalability: Sliding Window Log and Leaky Bucket may face bottlenecks under heavy traffic as they require way more memory.
 
-Additionally, your implementation of the rate-limiter also contributes to the overall performance. Factors such as programming language, concurrency mechanisms (mutex locks, atomic operations (CAS), transaction...) can affect the efficiency of the rate limiter.
+Additionally, your implementation of the rate-limiter also contributes to the overall performance. Factors such as programming language, concurrency mechanisms (mutex locks, atomic operations (CAS), transaction...), or choosing between [asynchronous and synchronous](https://blog.cloudflare.com/counting-things-a-lot-of-different-things/#sliding-windows-to-the-rescue) when updating the counters... can all impact the performance of your rate limiter.
 
 ## Milestones
 
