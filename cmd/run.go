@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"crypto/rand"
 	"fmt"
-	"math/big"
-	"sync"
 	"time"
 
 	"github.com/minhthong582000/rate-limiter/internal/engine"
+	"github.com/minhthong582000/rate-limiter/internal/simulator"
 	"github.com/minhthong582000/soa-404/pkg/signals"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +28,7 @@ var (
 	numRequests int64
 	waitTime    int64 // in milliseconds
 	jitter      int64 // in milliseconds
-	parallel    int8  // number of parallel workers
+	parallel    int64 // number of parallel workers
 )
 
 // runCmd represents the run command
@@ -72,6 +70,10 @@ You can choose between different rate limiting engines such as fixed-window, sli
 			return fmt.Errorf("jitter must be between 0 and wait time")
 		}
 
+		if parallel <= 0 {
+			return fmt.Errorf("number of parallel workers must be greater than 0")
+		}
+
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -96,48 +98,15 @@ You can choose between different rate limiting engines such as fixed-window, sli
 			return err
 		}
 
-		// Request simulation
-		errCh := make(chan error, 1)
-		var wg sync.WaitGroup
-		for i := int8(0); i < parallel; i++ {
-			wg.Add(1)
-
-			go func() {
-				defer wg.Done()
-
-				for j := int64(0); j < numRequests; j++ {
-					// Random jitter between [-jitter, jitter]
-					rj := int64(0)
-					if jitter > 0 {
-						randomJitter, err := rand.Int(rand.Reader, big.NewInt(jitter*2))
-						if err != nil {
-							errCh <- err
-						}
-						rj = randomJitter.Int64() - jitter
-					}
-
-					now := time.Now()
-					if ratelimiter.AllowAt(now) {
-						fmt.Printf("Request %d.%d ALLOWED, ts=\"%v\"\n", i+1, j+1, now)
-					} else {
-						fmt.Printf("Request %d.%d DENIED, ts=\"%v\"\n", i+1, j+1, now)
-					}
-					time.Sleep(time.Duration(waitTime+rj) * time.Millisecond)
-				}
-			}()
-		}
-
-		go func() {
-			wg.Wait()
-			fmt.Println("All workers finished, press Ctrl+C to exit...")
-		}()
-
-		select {
-		case <-stopCh:
-			fmt.Println("Shutting down the rate limiter engine...")
-		case err := <-errCh:
-			return err
-		}
+		simulator := simulator.NewSimulator(
+			simulator.WithRateLimiter(ratelimiter),
+			simulator.WithNumWorker(parallel),
+			simulator.WithNumRequests(numRequests),
+			simulator.WithWaitTime(waitTime),
+			simulator.WithJitter(jitter),
+			simulator.WithStopChannel(stopCh),
+		)
+		simulator.Run() // Blocking call
 
 		return nil
 	},
@@ -164,5 +133,5 @@ func init() {
 	runCmd.PersistentFlags().Int64Var(&numRequests, "num-requests", 100, "Simulator: Number of requests to simulate")
 	runCmd.PersistentFlags().Int64Var(&waitTime, "wait-time", 100, "Simulator: Wait time between requests in milliseconds")
 	runCmd.PersistentFlags().Int64Var(&jitter, "jitter", 0, "Simulator: Random jitter in milliseconds")
-	runCmd.PersistentFlags().Int8Var(&parallel, "parallel", 1, "Simulator: Number of parallel workers")
+	runCmd.PersistentFlags().Int64Var(&parallel, "parallel", 1, "Simulator: Number of parallel workers")
 }
