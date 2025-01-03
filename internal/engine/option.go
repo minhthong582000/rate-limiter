@@ -15,7 +15,7 @@ type Config struct {
 	LeakRate time.Duration
 
 	// Fixed size window and sliding window specific configuration
-	windowSize time.Duration
+	windowSize int64
 }
 
 type Option func(f *Config)
@@ -56,7 +56,7 @@ func WithStopCh(stopCh <-chan struct{}) Option {
 	}
 }
 
-func WithWindowSize(windowSize time.Duration) Option {
+func WithWindowSize(windowSize int64) Option {
 	return func(f *Config) {
 		f.windowSize = windowSize
 	}

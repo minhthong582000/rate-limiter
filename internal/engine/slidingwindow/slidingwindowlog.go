@@ -9,14 +9,14 @@ import (
 
 type slidingWindowLogs struct {
 	capacity   uint64 // Max requests allowed in the window
-	windowSize time.Duration
+	windowSize int64  // Window size in millisecond
 	requestLog *ringbuffer.RingBuffer[time.Time]
 	mutex      sync.Mutex
 }
 
 func NewSlidingWindowLogs(
 	capacity uint64,
-	windowSize time.Duration,
+	windowSize int64,
 ) *slidingWindowLogs {
 	if windowSize <= 0 {
 		panic("window size must be greater than 0")
@@ -35,7 +35,7 @@ func (f *slidingWindowLogs) AllowAt(arriveAt time.Time) bool {
 
 	for !f.requestLog.IsEmpty() {
 		lastLog, _ := f.requestLog.PeekFront()
-		if arriveAt.Sub(lastLog) > f.windowSize {
+		if arriveAt.Sub(lastLog).Milliseconds() > f.windowSize {
 			f.requestLog.PopFront()
 		} else {
 			break

@@ -11,10 +11,10 @@ import (
 
 // TestNewFixedSizeWindow tests the fixed-size window rate limiter constructor.
 func TestNewFixedSizeWindow(t *testing.T) {
-	limiter := NewFixedSizeWindow(3, time.Second)
+	limiter := NewFixedSizeWindow(3, 1000) // capacity=3, windowSize=1s
 
 	assert.Equal(t, uint64(3), limiter.capacity, "Capacity should be 3")
-	assert.Equal(t, time.Second, limiter.windowSize, "Window size should be 1 second")
+	assert.Equal(t, int64(1000), limiter.windowSize, "Window size should be 1000ms")
 
 	state := limiter.state.Load()
 	assert.Equal(t, uint64(0), state.currCount, "Initial count should be 0")
@@ -23,7 +23,7 @@ func TestNewFixedSizeWindow(t *testing.T) {
 
 // TestFixedSizeWindow_Basic tests basic behavior of the fixed-size window rate limiter.
 func TestFixedSizeWindow_Basic(t *testing.T) {
-	limiter := NewFixedSizeWindow(3, time.Second)
+	limiter := NewFixedSizeWindow(3, 1000) // capacity=3, windowSize=1s
 
 	requests := []string{
 		// 4 requests at the same time
@@ -53,7 +53,7 @@ func TestFixedSizeWindow_Basic(t *testing.T) {
 
 // TestFixedSizeWindow_RequestAtBoundary tests the rate limiter behavior at the boundary of the window.
 func TestFixedSizeWindow_RequestAtBoundary(t *testing.T) {
-	limiter := NewFixedSizeWindow(3, 10*time.Second)
+	limiter := NewFixedSizeWindow(3, 10000) // capacity=3, windowSize=10s
 
 	// Requests timestamps within 11 seconds window
 	requests := []string{
@@ -78,7 +78,7 @@ func TestFixedSizeWindow_RequestAtBoundary(t *testing.T) {
 
 // TestFixedSizeWindow_ConcurrentAccess tests concurrent access to the rate limiter.
 func TestFixedSizeWindow_ConcurrentAccess(t *testing.T) {
-	limiter := NewFixedSizeWindow(10, time.Second)
+	limiter := NewFixedSizeWindow(10, 1000)
 	var wg sync.WaitGroup
 
 	successCount := atomic.Uint64{}
@@ -105,7 +105,7 @@ func TestFixedSizeWindow_ConcurrentAccess(t *testing.T) {
 
 // TestFixedSizeWindow_NegativeElapsedTime ensures no behavior breaks with a negative elapsed time.
 func TestFixedSizeWindow_NegativeElapsedTime(t *testing.T) {
-	limiter := NewFixedSizeWindow(5, time.Second)
+	limiter := NewFixedSizeWindow(5, 1000)
 
 	requests := []string{
 		"2025-01-02T00:00:00Z",

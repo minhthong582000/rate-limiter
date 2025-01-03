@@ -63,7 +63,10 @@ func EngineFactory(opts ...Option) (Engine, error) {
 			config.windowSize,
 		)
 	case SlidingWindowCounter:
-		return nil, nil
+		engine = slidingwindow.NewSlidingWindowCounter(
+			float64(config.Capacity),
+			int64(config.windowSize),
+		)
 	case TokenBucket:
 		engine = tokenbucket.NewTokenBucket(
 			float64(config.Capacity),

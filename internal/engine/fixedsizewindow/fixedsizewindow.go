@@ -13,13 +13,13 @@ type state struct {
 
 type fixedSizeWindow struct {
 	capacity   uint64 // Max requests allowed in the window
-	windowSize time.Duration
+	windowSize int64
 	state      atomic.Pointer[state]
 }
 
 func NewFixedSizeWindow(
 	capacity uint64,
-	windowSize time.Duration,
+	windowSize int64,
 ) *fixedSizeWindow {
 	if windowSize <= 0 {
 		panic("window size must be greater than 0")
@@ -50,7 +50,7 @@ func (f *fixedSizeWindow) AllowAt(arriveAt time.Time) bool {
 
 		// Reset the window if new request arrives after the window has expired
 		// or this is the first request
-		if lastState.lastTime == 0 || elapsed > f.windowSize.Milliseconds() {
+		if lastState.lastTime == 0 || elapsed > f.windowSize {
 			newState := &state{
 				currCount: 1,
 				lastTime:  now,

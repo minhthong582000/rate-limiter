@@ -88,7 +88,7 @@ You can choose between different rate limiting engines such as fixed-window, sli
 			engine.WithLeakRate(time.Duration(drainDuration)*time.Millisecond),
 
 			// Fixed size or sliding window specific configuration
-			engine.WithWindowSize(time.Duration(windowSize)*time.Millisecond),
+			engine.WithWindowSize(windowSize),
 		)
 		if err != nil {
 			return err

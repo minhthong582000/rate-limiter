@@ -11,16 +11,16 @@ import (
 
 // TestNewSlidingWindowLogs tests sliding window logs constructor
 func TestNewSlidingWindowLogs(t *testing.T) {
-	limiter := NewSlidingWindowLogs(3, 1*time.Second)
+	limiter := NewSlidingWindowLogs(3, 1000) // capacity=3, windowSize=1s
 
 	assert.Equal(t, uint64(3), limiter.capacity, "Capacity should be 3")
-	assert.Equal(t, 1*time.Second, limiter.windowSize, "Window size should be 1 second")
+	assert.Equal(t, int64(1000), limiter.windowSize, "Window size should be 1000ms")
 	assert.NotNil(t, limiter.requestLog, "Request log should be initialized")
 }
 
 // TestSlidingWindowLogs_Basic tests the basic behavior of the sliding window logs
 func TestSlidingWindowLogs_Basic(t *testing.T) {
-	limiter := NewSlidingWindowLogs(3, 1*time.Second) // 3 requests per 1 second
+	limiter := NewSlidingWindowLogs(3, 1000) // capacity=3, windowSize=1s
 
 	requests := []string{
 		// 4 requests at the same time
@@ -50,7 +50,7 @@ func TestSlidingWindowLogs_Basic(t *testing.T) {
 
 // TestSlidingWindowLogs_RequestAtBoundary tests the rate limiter behavior at the boundary of the window.
 func TestSlidingWindowLogs_RequestAtBoundary(t *testing.T) {
-	limiter := NewSlidingWindowLogs(3, 10*time.Second)
+	limiter := NewSlidingWindowLogs(3, 10000) // capacity=3, windowSize=10s
 
 	// Requests timestamps within 11 seconds window
 	requests := []string{
@@ -83,7 +83,7 @@ func TestSlidingWindowLogs_RequestAtBoundary(t *testing.T) {
 
 // TestSlidingWindowLogs_ConcurrentAccess tests thread safety under concurrent access
 func TestSlidingWindowLogs_ConcurrentAccess(t *testing.T) {
-	limiter := NewSlidingWindowLogs(10, 10*time.Second) // 10 requests per second
+	limiter := NewSlidingWindowLogs(10, 10000) // capacity=10, windowSize=10s
 
 	var wg sync.WaitGroup
 	var allowedRequests atomic.Int32

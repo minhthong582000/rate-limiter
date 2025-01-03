@@ -6,7 +6,7 @@ Simple rate limiter implementation using many different strategies:
 
 - [x] Fixed window
 - [x] Sliding window log
-- [ ] Sliding window counter
+- [x] Sliding window counter
 - [x] Token bucket (default)
 - [x] Leaky bucket
 
@@ -114,4 +114,31 @@ Key points:
 
 ### 5. Sliding window Counter
 
-TODO
+Run:
+
+```bash
+go run main.go run --engine=sliding-window-counter --capacity=5 --window-size=1000 --num-requests=30 --wait-time=100
+```
+
+To reduce the memory and CPU overhead of the sliding window log strategy, we can use a sliding window counter. By using only 2 counters of `previous` and `current` windows, we can estimate total requests in the actual window (`now - window-size`) by taking the weighted count of `previous` and add it to the count of `current` window.
+
+For example, `previous` window is starting at `0 -> 100` with `30` requests, `current` window is starting at `100 -> 200` and currently has `10` requests, and new request comes in at `160`. The approximate number of requests in the actual window is:
+
+```go
+currWindowWeight = (160 - 100)/100 = 0.6
+prevWindowWeight = 1 - currWindowWeight = 1 - 0.6 = 0.4
+estimatedCount = 30 * 0.4 + 10 = 22
+```
+
+About the configuration, let's say you want to handle 300 requests every minute:
+
+- capacity=300, window-size=60000 (ms)
+
+In this configuration, we can handle on average 300 requests for every (sliding) window of 60s. If the estimated number of requests exceeds 300 in a window, the request will be rejected.
+
+The formula use in this strategy assumes that the number of requests is uniformly distributed in all windows which is why it's an approximation. But in reality, Cloudflare has been using this strategy in their rate limiter and shown [good results](https://blog.cloudflare.com/counting-things-a-lot-of-different-things/).
+
+Key points:
+
+- Trade-off between the accuracy of the rate limiter and memory/CPU overhead. But still more accurate than the fixed window strategy and does not suffer from boundary issues.
+- Need locking or atomic operations to update the counters in high concurrency scenarios.
