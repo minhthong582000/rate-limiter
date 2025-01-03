@@ -12,7 +12,7 @@ Simple rate limiter implementation using many different strategies:
 
 ### Dependencies
 
-- [go 1.23 or above]([https://golang.org/](https://go.dev/doc/install))
+- [go 1.23 or above](https://go.dev/doc/install)
 
 ## Usage
 
