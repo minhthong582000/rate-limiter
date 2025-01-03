@@ -147,11 +147,28 @@ Key points:
 - Trade-off between the accuracy of the rate limiter and memory/CPU overhead. But still more accurate than the fixed window strategy and does not suffer from boundary issues.
 - Need locking or atomic operations to update the counters in high concurrency scenarios.
 
-## License
+### Conclusion
 
-Copyright © 2020 - 2025 Thong Le
+Choosing the right rate-limiting strategy depends on a combination of your system’s requirements and constraints. Below are some factors to consider:
 
-Distributed under the GPLv3 License. See license `LICENSE.md` file for more information.
+- Traffic Pattern: The pattern of incoming requests to your system.
+  - Steady Traffic: Leaky Bucket ensures a consistent, predictable flow of requests.
+  - Bursty Traffic: Token Bucket can efficiently handle sudden burst while maintaining average limits.
+  - Mixed Traffic: Sliding Window Log/Counter offers a good enoug to handle both steady and bursty traffic.
+
+- Accuracy:
+  - High Precision: Sliding Window Log and Leaky Bucket provide precise control at the cost of higher memory or computational overhead.
+  - Approximate Control: Sliding Window Counter and Token Bucket offer good enough accuracy for most use cases with better resource utilization.
+
+- Resource Efficiency (Memory/CPU Overhead): The system resources available for rate-limiting operations.
+  - High: Sliding Window Log and Leaky Bucket can be resource-intensive, especially with large window and request volumes.
+  - Low: Token Bucket and Sliding Window Counter only require a few counters to track requests but may not be as precise.
+
+- Scalability: The ability of the rate limiter to scale with increasing traffic, while ensuring fault tolerance.
+  - Highly Scalable: Token Bucket and Sliding Window Counter are easier to scale by integrating with distributed caching system like Redis, Memcached... with lower resource overhead.
+  - Limited Scalability: Sliding Window Log and Leaky Bucket may face bottlenecks under heavy traffic as they require way more memory.
+
+Additionally, your implementation of the rate-limiter also contributes to the overall performance. Factors such as programming language, concurrency mechanisms (mutex locks, atomic operations (CAS), transaction...) can affect the efficiency of the rate limiter.
 
 ## Milestones
 
