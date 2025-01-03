@@ -50,7 +50,7 @@ func WithLeakRate(leakRate time.Duration) Option {
 	}
 }
 
-func WithStopCh(stopCh <-chan struct{}) Option {
+func WithStopChannel(stopCh <-chan struct{}) Option {
 	return func(f *Config) {
 		f.StopCh = stopCh
 	}

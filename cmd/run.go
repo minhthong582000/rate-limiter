@@ -79,7 +79,7 @@ You can choose between different rate limiting engines such as fixed-window, sli
 
 		ratelimiter, err := engine.EngineFactory(
 			engine.WithEngineType(engine.StringToEngineType(engineType)),
-			engine.WithStopCh(stopCh),
+			engine.WithStopChannel(stopCh),
 			engine.WithCapacity(uint64(capacity)),
 
 			// Token bucket specific configuration
