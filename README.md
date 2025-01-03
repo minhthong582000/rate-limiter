@@ -147,7 +147,7 @@ Key points:
 - Trade-off between the accuracy of the rate limiter and memory/CPU overhead. But still more accurate than the fixed window strategy and does not suffer from boundary issues.
 - Need locking or atomic operations to update the counters in high concurrency scenarios.
 
-### Conclusion
+## Conclusion
 
 Choosing the right rate-limiting strategy depends on a combination of your system’s requirements and constraints. Below are some factors to consider:
 
@@ -180,3 +180,12 @@ Additionally, your implementation of the rate-limiter also contributes to the ov
   - [x] Leaky bucket
 - [ ] Implement request simulator
 - [ ] Expose metrics.
+
+## References
+
+- <https://blog.cloudflare.com/counting-things-a-lot-of-different-things>
+- <https://konghq.com/blog/engineering/how-to-design-a-scalable-rate-limiting-algorithm>
+- <https://raphaeldelio.com/2024/12/23/rate-limiting-with-redis-an-essential-guide/>
+- <https://github.com/uber-go/ratelimit>
+- <https://blog.algomaster.io/p/rate-limiting-algorithms-explained-with-code>
+- <https://www.figma.com/blog/an-alternative-approach-to-rate-limiting/>
