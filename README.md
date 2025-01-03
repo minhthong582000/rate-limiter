@@ -25,6 +25,7 @@ You can adjust the requests simulation by specifying the following flags:
 - `--num-requests`: Number of requests to simulate.
 - `--wait-time`: Time to wait between requests in milliseconds.
 - `--jitter`: Jitter in milliseconds to add to the wait time. The actual wait time will be `wait-time + rand(-jitter, jitter)`.
+- `--parallel`: Number of parallel workers to simulate requests. Each worker will simulate `num-requests` requests.
 
 ## Comparison
 
@@ -178,8 +179,8 @@ Additionally, your implementation of the rate-limiter also contributes to the ov
   - [x] Sliding window counter
   - [x] Token bucket
   - [x] Leaky bucket
-- [ ] Implement request simulator
-- [ ] Expose metrics.
+- [x] Implement request simulator
+- [ ] Implement a simple HTTP and expose its metrics
 
 ## References
 
