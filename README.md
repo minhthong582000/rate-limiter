@@ -10,6 +10,10 @@ Simple rate limiter implementation using many different strategies:
 - [x] Token bucket (default)
 - [x] Leaky bucket
 
+### Dependencies
+
+- [go 1.23 or above](https://golang.org/)
+
 ## Usage
 
 ```bash
@@ -142,3 +146,20 @@ Key points:
 
 - Trade-off between the accuracy of the rate limiter and memory/CPU overhead. But still more accurate than the fixed window strategy and does not suffer from boundary issues.
 - Need locking or atomic operations to update the counters in high concurrency scenarios.
+
+## License
+
+Copyright © 2020 - 2025 Thong Le
+
+Distributed under the GPLv3 License. See license `LICENSE.md` file for more information.
+
+## Milestones
+
+- [x] Implement rate limiter using different strategies:
+  - [x] Fixed window
+  - [x] Sliding window log
+  - [x] Sliding window counter
+  - [x] Token bucket (default)
+  - [x] Leaky bucket
+- [ ] Implement request simulator
+- [ ] Expose metrics.
