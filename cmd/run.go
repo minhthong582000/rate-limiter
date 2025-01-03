@@ -116,10 +116,11 @@ You can choose between different rate limiting engines such as fixed-window, sli
 						rj = randomJitter.Int64() - jitter
 					}
 
-					if ratelimiter.Allow() {
-						fmt.Printf("Worker %d: Request %d ALLOWED, sleeping for %dms\n", i, j+1, waitTime+rj)
+					now := time.Now()
+					if ratelimiter.AllowAt(now) {
+						fmt.Printf("Request %d.%d ALLOWED, ts=\"%v\"\n", i+1, j+1, now)
 					} else {
-						fmt.Printf("Worker %d: Request %d DENIED, sleeping for %dms\n", i, j+1, waitTime+rj)
+						fmt.Printf("Request %d.%d DENIED, ts=\"%v\"\n", i+1, j+1, now)
 					}
 					time.Sleep(time.Duration(waitTime+rj) * time.Millisecond)
 				}

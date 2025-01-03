@@ -180,6 +180,7 @@ Additionally, your implementation of the rate-limiter also contributes to the ov
   - [x] Token bucket
   - [x] Leaky bucket
 - [x] Implement request simulator
+- [ ] Debug logging
 - [ ] Implement a simple HTTP and expose its metrics
 
 ## References
