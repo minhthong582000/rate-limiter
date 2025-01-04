@@ -6,37 +6,42 @@ import (
 
 // RingBuffer
 type RingBuffer[T any] struct {
-	buffer   []T
-	len      uint64
-	capacity uint64
-	start    uint64
+	capacity   uint64
+	start, end uint64
+	buffer     []T
 }
 
 func NewRingBuffer[T any](capacity uint64) *RingBuffer[T] {
 	return &RingBuffer[T]{
-		capacity: capacity,
-		buffer:   make([]T, capacity),
+		capacity: capacity + 1,
+		buffer:   make([]T, capacity+1),
 	}
 }
 
 func (r *RingBuffer[T]) IsFull() bool {
-	return r.len == r.capacity
+	return r.incrementIndex(r.end) == r.start
 }
 
 func (r *RingBuffer[T]) IsEmpty() bool {
-	return r.len == 0
+	return r.start == r.end
 }
 
 func (r *RingBuffer[T]) Capacity() uint64 {
-	return r.capacity
+	return r.capacity - 1
 }
 
 func (r *RingBuffer[T]) Size() uint64 {
-	return r.len
+	return r.end - r.start
 }
 
 func (r *RingBuffer[T]) StartIndex() uint64 {
 	return r.start
+}
+
+// incrementIndex use modulus to calculate when the index should wrap to the beginning
+// in a circular way
+func (r *RingBuffer[T]) incrementIndex(index uint64) uint64 {
+	return (index + 1) % r.capacity
 }
 
 func (r *RingBuffer[T]) PushBack(value T) error {
@@ -44,9 +49,9 @@ func (r *RingBuffer[T]) PushBack(value T) error {
 		return fmt.Errorf("ring is full")
 	}
 
-	pos := (r.start + r.len) % r.capacity
-	r.buffer[pos] = value
-	r.len += 1
+	pos := r.end
+	r.buffer[r.end] = value
+	r.end = r.incrementIndex(pos)
 
 	return nil
 }
@@ -58,8 +63,7 @@ func (r *RingBuffer[T]) PopFront() (T, error) {
 
 	value := r.buffer[r.start]
 	r.buffer[r.start] = *new(T) // Clear the value
-	r.len -= 1
-	r.start = (r.start + 1) % r.capacity
+	r.start = r.incrementIndex(r.start)
 
 	return value, nil
 }
@@ -73,9 +77,9 @@ func (r *RingBuffer[T]) PeekFront() (T, error) {
 }
 
 func (r *RingBuffer[T]) Clear() {
-	r.start = 0
-	r.len = 0
-	for i := range r.buffer {
+	for i := range r.capacity {
 		r.buffer[i] = *new(T)
 	}
+	r.start = 0
+	r.end = 0
 }
