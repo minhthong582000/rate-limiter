@@ -20,12 +20,16 @@ func TestNewTokenBucket(t *testing.T) {
 
 	state := bucket.state.Load()
 	assert.Equal(t, float64(5), state.currToken, "Initial token count should be 5")
-	assert.Equal(t, time.Unix(0, 0).UTC(), state.lastTime, "Initial last time should be Unix epoch start time")
+	assert.WithinDuration(t, time.Now(), state.lastTime, time.Second, "Initial last time should be close to current time")
 }
 
 // TestTokenBucket_Basic validates basic token bucket behavior.
 func TestTokenBucket_Basic(t *testing.T) {
 	bucket := NewTokenBucket(3, 1, 1) // capacity=3, fillRate=1/ms, consumeRate=1
+
+	// Set the initial lastTime to a value before the test cases below.
+	// By default, lastTime is set to time.Now() causing the tests to return false.
+	bucket.state.Store(&state{currToken: bucket.capacity, lastTime: time.Unix(0, 0).UTC()})
 
 	requests := []string{
 		// 4 requests at the same time
@@ -83,6 +87,10 @@ func TestTokenBucket_ConcurrentAccess(t *testing.T) {
 // TestTokenBucket_NegativeElapsedTime ensures that negative elapsed time is handled safely.
 func TestTokenBucket_NegativeElapsedTime(t *testing.T) {
 	bucket := NewTokenBucket(5, 1, 1) // capacity=5, fillRate=1/ms, consumeRate=1
+
+	// Set the initial lastTime to a value before the test cases below.
+	// By default, lastTime is set to time.Now() causing the tests to return false.
+	bucket.state.Store(&state{currToken: bucket.capacity, lastTime: time.Unix(0, 0).UTC()})
 
 	requests := []string{
 		"2025-01-02T00:00:00Z",

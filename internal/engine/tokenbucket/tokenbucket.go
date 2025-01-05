@@ -38,7 +38,7 @@ func NewTokenBucket(
 	}
 	t.state.Store(&state{
 		currToken: capacity,
-		lastTime:  time.Unix(0, 0).UTC(),
+		lastTime:  time.Now(),
 	})
 	return t
 }

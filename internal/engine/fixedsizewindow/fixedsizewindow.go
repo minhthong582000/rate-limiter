@@ -30,7 +30,7 @@ func NewFixedSizeWindow(
 	}
 	f.state.Store(&state{
 		currCount: 0,
-		lastTime:  time.Unix(0, 0).UTC(),
+		lastTime:  time.Now(),
 	})
 	return f
 }

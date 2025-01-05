@@ -18,12 +18,16 @@ func TestNewFixedSizeWindow(t *testing.T) {
 
 	state := limiter.state.Load()
 	assert.Equal(t, uint64(0), state.currCount, "Initial count should be 0")
-	assert.Equal(t, time.Unix(0, 0).UTC(), state.lastTime, "Initial last time should be zero")
+	assert.WithinDuration(t, time.Now(), state.lastTime, time.Second, "Initial last time should be close to current time")
 }
 
 // TestFixedSizeWindow_Basic tests basic behavior of the fixed-size window rate limiter.
 func TestFixedSizeWindow_Basic(t *testing.T) {
 	limiter := NewFixedSizeWindow(3, 1000) // capacity=3, windowSize=1s
+
+	// Set the initial lastTime to a value before the test cases below.
+	// By default, lastTime is set to time.Now() causing the tests to return false.
+	limiter.state.Store(&state{currCount: 0, lastTime: time.Unix(0, 0).UTC()})
 
 	requests := []string{
 		// 4 requests at the same time
@@ -54,6 +58,10 @@ func TestFixedSizeWindow_Basic(t *testing.T) {
 // TestFixedSizeWindow_RequestAtBoundary tests the rate limiter behavior at the boundary of the window.
 func TestFixedSizeWindow_RequestAtBoundary(t *testing.T) {
 	limiter := NewFixedSizeWindow(3, 10000) // capacity=3, windowSize=10s
+
+	// Set the initial lastTime to a value before the test cases below.
+	// By default, lastTime is set to time.Now() causing the tests to return false.
+	limiter.state.Store(&state{currCount: 0, lastTime: time.Unix(0, 0).UTC()})
 
 	// Requests timestamps within 11 seconds window
 	requests := []string{
@@ -106,6 +114,10 @@ func TestFixedSizeWindow_ConcurrentAccess(t *testing.T) {
 // TestFixedSizeWindow_NegativeElapsedTime ensures that we handle negative elapsed time correctly.
 func TestFixedSizeWindow_NegativeElapsedTime(t *testing.T) {
 	limiter := NewFixedSizeWindow(5, 1000)
+
+	// Set the initial lastTime to a value before the test cases below.
+	// By default, lastTime is set to time.Now() causing the tests to return false.
+	limiter.state.Store(&state{currCount: 0, lastTime: time.Unix(0, 0).UTC()})
 
 	requests := []string{
 		"2025-01-02T00:00:00Z",

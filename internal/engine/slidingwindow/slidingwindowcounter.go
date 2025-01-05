@@ -29,8 +29,9 @@ func NewSlidingWindowCounter(
 	s := &slidingWindowCounter{
 		capacity:   capacity,
 		windowSize: windowSize,
-		startTime:  time.Unix(0, 0).UTC(),
+		startTime:  time.Now(),
 	}
+
 	s.state.Store(&state{
 		currCount:  0,
 		prevCount:  0,
