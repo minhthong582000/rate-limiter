@@ -1,7 +1,6 @@
 package slidingwindow
 
 import (
-	"fmt"
 	"sync/atomic"
 	"time"
 )
@@ -13,8 +12,9 @@ type state struct {
 }
 
 type slidingWindowCounter struct {
-	capacity   float64 // Max requests allowed in the window
-	windowSize int64   // Window size in millisecond
+	capacity   float64   // Max requests allowed in the window
+	windowSize int64     // Window size in millisecond
+	startTime  time.Time // Used as a monotonic start time to calculate the window
 	state      atomic.Pointer[state]
 }
 
@@ -29,6 +29,7 @@ func NewSlidingWindowCounter(
 	s := &slidingWindowCounter{
 		capacity:   capacity,
 		windowSize: windowSize,
+		startTime:  time.Unix(0, 0).UTC(),
 	}
 	s.state.Store(&state{
 		currCount:  0,
@@ -39,7 +40,7 @@ func NewSlidingWindowCounter(
 }
 
 func (s *slidingWindowCounter) AllowAt(arriveAt time.Time) bool {
-	now := arriveAt.UnixMilli()
+	now := arriveAt.Sub(s.startTime).Milliseconds()
 
 	for {
 		lastState := s.state.Load()
@@ -49,7 +50,8 @@ func (s *slidingWindowCounter) AllowAt(arriveAt time.Time) bool {
 		currWindow := now / s.windowSize
 
 		if currWindow < lastState.currWindow {
-			fmt.Println("Warning: Negative elapsed time detected. Possible clock skew.")
+			// A lot of contention results in lots of CAS retries.
+			// This might causes the lastState.currWindow window to be in the future of currWindow window.
 			return false
 		}
 

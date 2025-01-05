@@ -1,14 +1,13 @@
 package fixedsizewindow
 
 import (
-	"fmt"
 	"sync/atomic"
 	"time"
 )
 
 type state struct {
 	currCount uint64
-	lastTime  int64
+	lastTime  time.Time
 }
 
 type fixedSizeWindow struct {
@@ -31,29 +30,27 @@ func NewFixedSizeWindow(
 	}
 	f.state.Store(&state{
 		currCount: 0,
-		lastTime:  0,
+		lastTime:  time.Unix(0, 0).UTC(),
 	})
 	return f
 }
 
 func (f *fixedSizeWindow) AllowAt(arriveAt time.Time) bool {
-	now := arriveAt.UnixMilli()
-
 	for {
 		lastState := f.state.Load()
-		elapsed := now - lastState.lastTime
+		elapsed := arriveAt.Sub(lastState.lastTime).Milliseconds()
 
 		if elapsed < 0 {
-			fmt.Println("Warning: Negative elapsed time detected. Possible clock skew.")
+			// A lot of contention results in lots of CAS retries.
+			// This might causes the lastState.lastTime to be in the future of arriveAt.
 			return false
 		}
 
 		// Reset the window if new request arrives after the window has expired
-		// or this is the first request
-		if lastState.lastTime == 0 || elapsed > f.windowSize {
+		if elapsed > f.windowSize {
 			newState := &state{
 				currCount: 1,
-				lastTime:  now,
+				lastTime:  arriveAt,
 			}
 			if f.state.CompareAndSwap(lastState, newState) {
 				return true
