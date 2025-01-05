@@ -1,7 +1,6 @@
 package tokenbucket
 
 import (
-	"fmt"
 	"math"
 	"sync/atomic"
 	"time"
@@ -9,7 +8,7 @@ import (
 
 type state struct {
 	currToken float64
-	lastTime  int64
+	lastTime  time.Time
 }
 
 type tokenBucket struct {
@@ -39,34 +38,23 @@ func NewTokenBucket(
 	}
 	t.state.Store(&state{
 		currToken: capacity,
-		lastTime:  0,
+		lastTime:  time.Unix(0, 0).UTC(),
 	})
 	return t
 }
 
 func (t *tokenBucket) AllowAt(arriveAt time.Time) bool {
-	now := arriveAt.UnixMilli()
-
 	for {
 		lastState := t.state.Load()
-		elapsed := now - lastState.lastTime
+		elapsed := arriveAt.Sub(lastState.lastTime).Milliseconds()
 		newState := &state{
-			lastTime: now,
+			lastTime: arriveAt,
 		}
 
 		if elapsed < 0 {
-			fmt.Println("Warning: Negative elapsed time detected. Possible clock skew.")
+			// A lot of contention results in lots of CAS retries.
+			// This might causes the lastState.lastTime to be in the future of arriveAt.
 			return false
-		}
-
-		// Always allow the first request
-		if lastState.lastTime == 0 {
-			newState.currToken = t.capacity - t.consumeRate
-			if t.state.CompareAndSwap(lastState, newState) {
-				return true
-			}
-			// Retry if CAS fails
-			continue
 		}
 
 		newState.currToken = math.Min(

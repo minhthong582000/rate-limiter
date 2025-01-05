@@ -14,13 +14,13 @@ func TestNewTokenBucket(t *testing.T) {
 	bucket := NewTokenBucket(5, 1, 1) // capacity=5, fillRate=1/ms, consumeRate=1
 
 	assert.NotNil(t, bucket)
-	assert.Equal(t, float64(5), bucket.capacity)
-	assert.Equal(t, float64(1), bucket.fillRate)
-	assert.Equal(t, float64(1), bucket.consumeRate)
+	assert.Equal(t, float64(5), bucket.capacity, "Capacity should be 5")
+	assert.Equal(t, float64(1), bucket.fillRate, "Fill rate should be 1")
+	assert.Equal(t, float64(1), bucket.consumeRate, "Consume rate should be 1")
 
 	state := bucket.state.Load()
-	assert.Equal(t, float64(5), state.currToken)
-	assert.Equal(t, int64(0), state.lastTime)
+	assert.Equal(t, float64(5), state.currToken, "Initial token count should be 5")
+	assert.Equal(t, time.Unix(0, 0).UTC(), state.lastTime, "Initial last time should be Unix epoch start time")
 }
 
 // TestTokenBucket_Basic validates basic token bucket behavior.

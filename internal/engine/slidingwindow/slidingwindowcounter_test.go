@@ -15,6 +15,7 @@ func TestNewSlidingWindowCounter(t *testing.T) {
 
 	assert.Equal(t, float64(3), limiter.capacity, "Capacity should be 3")
 	assert.Equal(t, int64(1000), limiter.windowSize, "Window size should be 1000ms")
+	assert.Equal(t, time.Unix(0, 0).UTC(), limiter.startTime, "Start time should be Unix epoch start time")
 
 	state := limiter.state.Load()
 	assert.Equal(t, float64(0), state.currCount, "Initial count should be 0")

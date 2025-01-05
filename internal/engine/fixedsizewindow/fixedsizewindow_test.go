@@ -18,7 +18,7 @@ func TestNewFixedSizeWindow(t *testing.T) {
 
 	state := limiter.state.Load()
 	assert.Equal(t, uint64(0), state.currCount, "Initial count should be 0")
-	assert.Equal(t, int64(0), state.lastTime, "Initial last time should be 0")
+	assert.Equal(t, time.Unix(0, 0).UTC(), state.lastTime, "Initial last time should be zero")
 }
 
 // TestFixedSizeWindow_Basic tests basic behavior of the fixed-size window rate limiter.
@@ -103,7 +103,7 @@ func TestFixedSizeWindow_ConcurrentAccess(t *testing.T) {
 	assert.Equal(t, uint64(10), failCount.Load(), "Remaining 10 requests should fail")
 }
 
-// TestFixedSizeWindow_NegativeElapsedTime ensures no behavior breaks with a negative elapsed time.
+// TestFixedSizeWindow_NegativeElapsedTime ensures that we handle negative elapsed time correctly.
 func TestFixedSizeWindow_NegativeElapsedTime(t *testing.T) {
 	limiter := NewFixedSizeWindow(5, 1000)
 

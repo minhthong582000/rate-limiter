@@ -46,7 +46,6 @@ func (l *leakyBucket) AllowAt(arriveAt time.Time) bool {
 	defer l.mutex.Unlock()
 
 	if l.queue.IsFull() {
-		fmt.Println("Queue is full")
 		return false
 	}
 
