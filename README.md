@@ -114,6 +114,31 @@ cosign verify \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
   --certificate-github-workflow-repository "minhthong582000/rate-limiter" \
   ghcr.io/minhthong582000/rate-limiter:${VERSION} | jq
+
+# Verification for ghcr.io/minhthong582000/rate-limiter:vx.y.z --
+# The following checks were performed on each of these signatures:
+#   - The cosign claims were validated
+#   - Existence of the claims in the transparency log was verified offline
+#   - The code-signing certificate was verified using trusted certificate authority certificates
+# [
+#   {
+#     "critical": {
+#       "identity": {
+#         "docker-reference": "ghcr.io/minhthong582000/rate-limiter"
+#       },
+#       "image": {
+#         "docker-manifest-digest": "sha256:abcxyz..."
+#       },
+#       "type": "cosign container image signature"
+#     },
+#     "optional": {
+#       "1.3.6.1.4.1.57264.1.1": "https://token.actions.githubusercontent.com",
+#       "1.3.6.1.4.1.57264.1.2": "push",
+#       "1.3.6.1.4.1.57264.1.3": "abc123...",
+#       "1.3.6.1.4.1.57264.1.4": "Release",
+#       "1.3.6.1.4.1.57264.1.5": "minhthong582000/rate-limiter",
+#       "1.3.6.1.4.1.57264.1.6": "refs/tags/vx.y.z",
+#       "Bundle": {
 ```
 
 5. Run the Docker image.
