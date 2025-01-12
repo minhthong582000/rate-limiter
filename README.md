@@ -1,5 +1,23 @@
 # Rate limiter
 
+- [Rate limiter](#rate-limiter)
+  - [Description](#description)
+  - [Installation](#installation)
+    - [Prerequisites](#prerequisites)
+    - [From release](#from-release)
+    - [From Docker](#from-docker)
+    - [From source](#from-source)
+  - [Usage](#usage)
+  - [Comparison](#comparison)
+    - [1. Token bucket](#1-token-bucket)
+    - [2. Leaky bucket](#2-leaky-bucket)
+    - [3. Fixed window](#3-fixed-window)
+    - [4. Sliding window Log](#4-sliding-window-log)
+    - [5. Sliding window Counter](#5-sliding-window-counter)
+  - [Conclusion](#conclusion)
+  - [Milestones](#milestones)
+  - [References](#references)
+
 ## Description
 
 Simple rate limiter implementation using many different strategies:
