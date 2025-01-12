@@ -17,6 +17,7 @@ Simple rate limiter implementation using many different strategies:
 - [go 1.23 or above](https://go.dev/doc/install)
 - [slsa-framework/slsa-verifier](https://github.com/slsa-framework/slsa-verifier#installation)
 - [crane](https://github.com/google/go-containerregistry/blob/main/cmd/crane/README.md)
+- [cosign](https://docs.sigstore.dev/cosign/system_config/installation/)
 
 ### From release
 
@@ -52,19 +53,32 @@ curl -sSfL https://github.com/minhthong582000/rate-limiter/releases/download/$VE
 curl -sL https://github.com/minhthong582000/rate-limiter/releases/download/$VERSION/rate-limiter.intoto.jsonl > provenance.intoto.jsonl
 
 # NOTE: You may be using a different architecture.
-slsa-verifier verify-artifact rate-limiter --provenance-path provenance.intoto.jsonl --source-uri github.com/minhthong582000/rate-limiter --source-tag "${VERSION}"
+slsa-verifier verify-artifact rate-limiter \
+  --provenance-path provenance.intoto.jsonl \
+  --source-uri github.com/minhthong582000/rate-limiter \
+  --source-tag "${VERSION}"
 
 # Verifying artifact rate-limiter: PASSED
 # PASSED: SLSA verification passed
 ```
 
-4. Make the binary executable.
+4. Verify image. Images are signed by [cosign](https://github.com/sigstore/cosign) using identity-based ("keyless") signing and transparency. Executing the following command to verify the signature of a container image:
+
+```bash
+cosign verify \
+  --certificate-identity-regexp https://github.com/minhthong582000/rate-limiter/.github/workflows/release.yaml@refs/tags/v \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-github-workflow-repository "minhthong582000/rate-limiter" \
+  ghcr.io/minhthong582000/rate-limiter:${VERSION} | jq
+```
+
+5. Make the binary executable.
 
 ```bash
 chmod +x rate-limiter
 ```
 
-5. Run the binary.
+6. Run the binary.
 
 ```bash
 ./rate-limiter --help

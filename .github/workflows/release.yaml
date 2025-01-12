@@ -51,6 +51,18 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Install cosign
+        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
+
+      - name: Sign image
+        run: |
+          cosign sign \
+            -a "repo=minhthong582000/rate-limiter" \
+            -a "workflow=Release" \
+            -a "sha=${{ github.sha}}" \
+            -y \
+            "${{ env.REGISTRY }}/${{ env.REGISTRY_PATH }}"@${{ steps.push.outputs.digest }}
+
   image-provenance:
     needs:
       - release-image
