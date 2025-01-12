@@ -32,7 +32,7 @@ or set a specific version:
 VERSION=vX.Y.Z   # Version number with a leading v
 ```
 
-1. Download the binary that matches your OS and architecture.
+2. Download the binary that matches your OS and architecture.
 
 ```bash
 ## MacOS arm64
@@ -46,7 +46,7 @@ ARCH=arm64
 curl -sSfL https://github.com/minhthong582000/rate-limiter/releases/download/$VERSION/rate-limiter-$OS-$ARCH -o rate-limiter
 ```
 
-1. Verify the signature. This repository's CI generate [SLSA 3 provenance](https://slsa.dev) using the OpenSSF's [slsa-framework/slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator). To verify our release, install the verification tool from [slsa-framework/slsa-verifier#installation](https://github.com/slsa-framework/slsa-verifier#installation) and verify as follows:
+3. Verify the signature. This repository's CI generate [SLSA 3 provenance](https://slsa.dev) using the OpenSSF's [slsa-framework/slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator). To verify our release, install the verification tool from [slsa-framework/slsa-verifier#installation](https://github.com/slsa-framework/slsa-verifier#installation) and verify as follows:
 
 ```bash
 curl -sL https://github.com/minhthong582000/rate-limiter/releases/download/$VERSION/rate-limiter.intoto.jsonl > provenance.intoto.jsonl
@@ -58,13 +58,13 @@ slsa-verifier verify-artifact rate-limiter --provenance-path provenance.intoto.j
 # PASSED: SLSA verification passed
 ```
 
-1. Make the binary executable.
+4. Make the binary executable.
 
 ```bash
 chmod +x rate-limiter
 ```
 
-1. Run the binary.
+5. Run the binary.
 
 ```bash
 ./rate-limiter --help
@@ -84,13 +84,13 @@ or set a specific version:
 VERSION=vX.Y.Z   # Version number with a leading v
 ```
 
-1. Pull the Docker image.
+2. Pull the Docker image.
 
 ```bash
 docker pull ghcr.io/minhthong582000/rate-limiter:${VERSION}
 ```
 
-1. Verify the image. This repository's CI generate [SLSA 3 provenance](https://slsa.dev) using the OpenSSF's [slsa-framework/slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator). To verify the image, install the verification tool from [slsa-framework/slsa-verifier#installation](https://github.com/slsa-framework/slsa-verifier#installation) and verify as follows:
+3. Verify the image. This repository's CI generate [SLSA 3 provenance](https://slsa.dev) using the OpenSSF's [slsa-framework/slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator). To verify the image, install the verification tool from [slsa-framework/slsa-verifier#installation](https://github.com/slsa-framework/slsa-verifier#installation) and verify as follows:
 
 ```bash
 IMAGE=ghcr.io/minhthong582000/rate-limiter:${VERSION}
@@ -99,8 +99,13 @@ slsa-verifier verify-image "$IMAGE" \
     --source-uri github.com/minhthong582000/rate-limiter \
     --source-tag "${VERSION}"
 
-# Verifying artifact rate-limiter: PASSED
 # PASSED: SLSA verification passed
+```
+
+4. Run the Docker image.
+
+```bash
+docker run --rm -it ghcr.io/minhthong582000/rate-limiter:${VERSION} --help
 ```
 
 ### From source
