@@ -28,7 +28,7 @@ archives:
     builds:
       - rate-limiter
     name_template: |-
-      {{ .ArtifactName }}-{{ .Os }}-{{ .Arch }}
+      {{ .ArtifactName }}
     format: binary
 
 checksum:
