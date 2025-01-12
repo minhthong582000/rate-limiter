@@ -62,23 +62,13 @@ slsa-verifier verify-artifact rate-limiter \
 # PASSED: SLSA verification passed
 ```
 
-4. Verify image. Images are signed by [cosign](https://github.com/sigstore/cosign) using identity-based ("keyless") signing and transparency. Executing the following command to verify the signature of a container image:
-
-```bash
-cosign verify \
-  --certificate-identity-regexp https://github.com/minhthong582000/rate-limiter/.github/workflows/release.yaml@refs/tags/v \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  --certificate-github-workflow-repository "minhthong582000/rate-limiter" \
-  ghcr.io/minhthong582000/rate-limiter:${VERSION} | jq
-```
-
-5. Make the binary executable.
+4. Make the binary executable.
 
 ```bash
 chmod +x rate-limiter
 ```
 
-6. Run the binary.
+5. Run the binary.
 
 ```bash
 ./rate-limiter --help
@@ -116,7 +106,17 @@ slsa-verifier verify-image "$IMAGE" \
 # PASSED: SLSA verification passed
 ```
 
-4. Run the Docker image.
+4. Verify image. Images are signed by [cosign](https://github.com/sigstore/cosign) using identity-based ("keyless") signing and transparency. Executing the following command to verify the signature of a container image:
+
+```bash
+cosign verify \
+  --certificate-identity-regexp https://github.com/minhthong582000/rate-limiter/.github/workflows/release.yaml@refs/tags/v \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-github-workflow-repository "minhthong582000/rate-limiter" \
+  ghcr.io/minhthong582000/rate-limiter:${VERSION} | jq
+```
+
+5. Run the Docker image.
 
 ```bash
 docker run --rm -it ghcr.io/minhthong582000/rate-limiter:${VERSION} --help
