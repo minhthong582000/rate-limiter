@@ -36,14 +36,14 @@ func (f *slidingWindowLogs) AllowAt(arriveAt time.Time) bool {
 	for !f.requestLog.IsEmpty() {
 		lastLog, _ := f.requestLog.PeekFront()
 		if arriveAt.Sub(lastLog).Milliseconds() > f.windowSize {
-			f.requestLog.PopFront()
+			_, _ = f.requestLog.PopFront()
 		} else {
 			break
 		}
 	}
 
 	if !f.requestLog.IsFull() {
-		f.requestLog.PushBack(arriveAt)
+		_ = f.requestLog.PushBack(arriveAt)
 		return true
 	}
 
