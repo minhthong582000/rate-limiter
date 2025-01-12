@@ -10,14 +10,44 @@ Simple rate limiter implementation using many different strategies:
 - Token bucket
 - Leaky bucket
 
-### Dependencies
+## Installation
+
+### Prerequisites
 
 - [go 1.23 or above](https://go.dev/doc/install)
+
+### From binary
+
+```bash
+## MacOS arm64
+curl -sSfL https://github.com/minhthong582000/rate-limiter/releases/latest/download/rate-limiter-darwin-arm64-darwin-arm64 -o rate-limiter
+chmod +x rate-limiter
+./rate-limiter --help
+
+## Linux amd64
+curl -sSfL https://github.com/minhthong582000/rate-limiter/releases/latest/download/rate-limiter-linux-amd64-linux-amd64
+ -o rate-limiter
+chmod +x rate-limiter
+./rate-limiter --help
+```
+
+### From Docker
+
+```bash
+docker run -it --rm ghcr.io/minhthong582000/rate-limiter:v0.1.0 --help
+```
+
+### From source
+
+```bash
+make build
+./bin/rate-limiter --help
+```
 
 ## Usage
 
 ```bash
-go run main.go run [flags]
+./rate-limiter run [flags]
 ```
 
 You can adjust the requests simulation by specifying the following flags:
@@ -34,7 +64,7 @@ You can adjust the requests simulation by specifying the following flags:
 Run:
 
 ```bash
-go run main.go run --engine=token-bucket --capacity=5 --fill-duration=200 --num-requests=20 --wait-time=10
+./rate-limiter run --engine=token-bucket --capacity=5 --fill-duration=200 --num-requests=20 --wait-time=10
 ```
 
 This strategy base on the idea of a bucket that can hold a limited number of tokens (`capacity`). A request comming in will consume a token from the bucket if there are sufficient tokens available. If the bucket is empty, the request will be rejected. The bucket will also be refilled at a constant `refillRate = 1/fill-duration` (token/ms).
@@ -55,7 +85,7 @@ Key points:
 Run:
 
 ```bash
-go run main.go run --engine=leaky-bucket --capacity=5 --drain-duration=200 --num-requests=20 --wait-time=100
+./rate-limiter run --engine=leaky-bucket --capacity=5 --drain-duration=200 --num-requests=20 --wait-time=100
 ```
 
 Think of this strategy as a bucket with a hole at the bottom. The bucket can hold a limited number of requests (`capacity`). When a request comes in, it will be added to the bucket (`queue`). If the bucket is full, the request will be rejected. The bucket will also be drained at a constant `drainRate = 1000/drain-duration` (requests/s).
@@ -76,7 +106,7 @@ Key points:
 Run:
 
 ```bash
-go run main.go run --engine=fixed-window --capacity=5 --window-size=1000 --num-requests=20 --wait-time=100
+./rate-limiter run --engine=fixed-window --capacity=5 --window-size=1000 --num-requests=20 --wait-time=100
 ```
 
 This strategy devide time into fixed windows of duration `windowSize`. Each window has a limited number of requests (`capacity`). When a request comes in, it will be added to the current window. If the request counter exceeds the capacity, the request will be rejected. The window will be reset after `windowSize` time.
@@ -99,7 +129,7 @@ Key points:
 Run:
 
 ```bash
-go run main.go run --engine=sliding-window-log --capacity=5 --window-size=1000 --num-requests=20 --wait-time=100
+./rate-limiter run --engine=sliding-window-log --capacity=5 --window-size=1000 --num-requests=20 --wait-time=100
 ```
 
 This strategy is an improvement over the fixed window strategy. It stores the timestamp of each request in a log (requestLog), this log can be implemented using a queue, Redis sorted set, etc. When a request comes in, it will discard all requests that are outside the current window (`now - requestTS > window-size`). After that, it will count the number of requests in the remaining log. If the number of requests exceeds the capacity, the request will be rejected.
@@ -122,7 +152,7 @@ Key points:
 Run:
 
 ```bash
-go run main.go run --engine=sliding-window-counter --capacity=5 --window-size=1000 --num-requests=30 --wait-time=100
+./rate-limiter run --engine=sliding-window-counter --capacity=5 --window-size=1000 --num-requests=30 --wait-time=100
 ```
 
 To reduce the memory and CPU overhead of the sliding window log strategy, we can use a sliding window counter. By using only 2 counters of `previous` and `current` windows, we can estimate total requests in the actual window (`now - window-size`) by taking the weighted count of `previous` and add it to the count of `current` window.
