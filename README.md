@@ -34,7 +34,7 @@ chmod +x rate-limiter
 ### From Docker
 
 ```bash
-docker run -it --rm ghcr.io/minhthong582000/rate-limiter:v0.1.0 --help
+docker run -it --rm ghcr.io/minhthong582000/rate-limiter:v0.1.1 --help
 ```
 
 ### From source
